@@ -420,7 +420,8 @@ class _ApiSettingsState extends ConsumerState<ApiSettings> {
     final modelList = models.split(',').map((e) => e.trim()).toList();
     modelList.removeWhere((e) => e.isEmpty);
 
-    Config.apis[name] = ApiConfig(
+    Config.apis[name] = Api(
+      name: name,
       url: apiUrl,
       key: apiKey,
       type: _type,

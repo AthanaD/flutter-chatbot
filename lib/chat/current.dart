@@ -23,14 +23,14 @@ import "dart:convert";
 
 class Current {
   static File? _file;
-  static ChatConfig? _chat;
+  static Chat? _chat;
 
-  static CoreConfig core = Config.core;
+  static ChatCore core = Config.core;
   static final List<Message> messages = [];
   static TtsStatus ttsStatus = TtsStatus.nothing;
   static ChatStatus chatStatus = ChatStatus.nothing;
 
-  static Future<void> load(ChatConfig chat) async {
+  static Future<void> load(Chat chat) async {
     _file = File(Config.chatFilePath(chat.fileName));
     final from = _file;
 
@@ -46,7 +46,7 @@ class Current {
       messages.add(Message.fromJson(message));
     }
 
-    core = coreJson != null ? CoreConfig.fromJson(coreJson) : Config.core;
+    core = coreJson != null ? ChatCore.fromJson(coreJson) : Config.core;
   }
 
   static Future<void> save() async {
@@ -70,7 +70,7 @@ class Current {
     final time = Util.formatDateTime(now);
     final fileName = "$timestamp.json";
 
-    _chat = ChatConfig(
+    _chat = Chat(
       time: time,
       title: title,
       fileName: fileName,
@@ -85,8 +85,8 @@ class Current {
   static String? get api => core.api;
   static String? get model => core.model;
 
-  static ApiConfig? get _api => Config.apis[api];
-  static BotConfig? get _bot => Config.bots[bot];
+  static Api? get _api => Config.apis[api];
+  static Bot? get _bot => Config.bots[bot];
 
   static String? get apiUrl => _api?.url;
   static String? get apiKey => _api?.key;
@@ -97,8 +97,8 @@ class Current {
   static double? get temperature => _bot?.temperature;
   static String? get systemPrompts => _bot?.systemPrompts;
 
-  static ChatConfig? get chat => _chat;
-  static set chat(ChatConfig? chat) => _chat = chat!;
+  static Chat? get chat => _chat;
+  static set chat(Chat? chat) => _chat = chat!;
 
   static String? get title => _chat?.title;
   static set title(String? title) => _chat?.title = title!;

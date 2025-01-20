@@ -93,7 +93,7 @@ class ModelSettings extends ConsumerStatefulWidget {
 class _ModelEditorState extends ConsumerState<ModelSettings> {
   late String _id;
   late bool? _chat;
-  late final ModelConfig? _model;
+  late final Model? _model;
   late final TextEditingController _ctrl;
 
   @override
@@ -184,7 +184,8 @@ class _ModelEditorState extends ConsumerState<ModelSettings> {
     if (name.isEmpty) return;
 
     final chat = _chat ?? true;
-    Config.models[_id] = ModelConfig(
+    Config.models[_id] = Model(
+      mid: _id,
       name: name,
       chat: chat,
     );

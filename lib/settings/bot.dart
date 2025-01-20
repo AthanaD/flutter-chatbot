@@ -282,7 +282,8 @@ class _BotSettingsState extends ConsumerState<BotSettings> {
     final text = _systemPromptsCtrl.text;
     final systemPrompts = text.isEmpty ? null : text;
 
-    Config.bots[name] = BotConfig(
+    Config.bots[name] = Bot(
+      name: name,
       stream: _stream,
       maxTokens: maxTokens,
       temperature: temperature,

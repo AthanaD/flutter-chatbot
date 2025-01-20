@@ -23,20 +23,23 @@ import "package:path_provider/path_provider.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
-class Config {
-  static late final TtsConfig tts;
-  static late final CicConfig cic;
-  static late final CoreConfig core;
-  static late final ImageConfig image;
-  static late final TitleConfig title;
-  static late final SearchConfig search;
-  static late final VectorConfig vector;
-  static late final DocumentConfig document;
+import "./gen/objectbox.g.dart";
+//import "package:objectbox/objectbox.dart";
 
-  static final List<ChatConfig> chats = [];
-  static final Map<String, BotConfig> bots = {};
-  static final Map<String, ApiConfig> apis = {};
-  static final Map<String, ModelConfig> models = {};
+class Config {
+  static late final ChatCore core;
+  static late final WebSearch search;
+  static late final TextToSpeech tts;
+  static late final ImageCompression cic;
+  static late final VectorStore vector;
+  static late final ImageGeneration image;
+  static late final TitleGeneration title;
+  static late final DocumentChunk document;
+
+  static final List<Chat> chats = [];
+  static final Map<String, Bot> bots = {};
+  static final Map<String, Api> apis = {};
+  static final Map<String, Model> models = {};
 
   static late final File _file;
   static late final String _dir;
@@ -48,6 +51,82 @@ class Config {
   static const String _imageDir = "image";
   static const String _settingsFile = "settings.json";
 
+  static late final Store store;
+  static late final Box<Bot> botBox;
+  static late final Box<Api> apiBox;
+  static late final Box<Chat> chatBox;
+  static late final Box<Model> modelBox;
+  static late final Box<Module> moduleBox;
+
+  static Future<void> _initDb() async {
+    store = await openStore(
+      directory: _dir,
+    );
+    botBox = store.box<Bot>();
+    apiBox = store.box<Api>();
+    chatBox = store.box<Chat>();
+    modelBox = store.box<Model>();
+    moduleBox = store.box<Module>();
+  }
+
+  static void saveModule(String key, Object module) {
+    moduleBox.put(Module(
+      key: key,
+      value: jsonEncode(module),
+    ));
+  }
+
+  static Future<void> _migrate() async {
+    final file = File("$_dir$_sep$_settingsFile");
+    if (!file.existsSync()) return;
+
+    final json = jsonDecode(file.readAsStringSync());
+
+    Map<String, dynamic> ttsJson = json["tts"] ?? {};
+    Map<String, dynamic> cicJson = json["cic"] ?? {};
+    Map<String, dynamic> coreJson = json["core"] ?? {};
+    Map<String, dynamic> imageJson = json["image"] ?? {};
+    Map<String, dynamic> titleJson = json["title"] ?? {};
+    Map<String, dynamic> searchJson = json["search"] ?? {};
+    Map<String, dynamic> vectorJson = json["vector"] ?? {};
+    Map<String, dynamic> documentJson = json["document"] ?? {};
+
+    Map<String, dynamic> botsJson = json["bots"] ?? {};
+    Map<String, dynamic> apisJson = json["apis"] ?? {};
+    Map<String, dynamic> modelsJson = json["models"] ?? {};
+
+    final core = ChatCore.fromJson(coreJson);
+    final tts = TextToSpeech.fromJson(ttsJson);
+    final search = WebSearch.fromJson(searchJson);
+    final cic = ImageCompression.fromJson(cicJson);
+    final vector = VectorStore.fromJson(vectorJson);
+    final image = ImageGeneration.fromJson(imageJson);
+    final title = TitleGeneration.fromJson(titleJson);
+    final document = DocumentChunk.fromJson(documentJson);
+
+    saveModule(Module.chatCore, core);
+    saveModule(Module.webSearch, search);
+    saveModule(Module.textToSpeech, tts);
+    saveModule(Module.vectorStore, vector);
+    saveModule(Module.imageCompression, cic);
+    saveModule(Module.imageGeneration, image);
+    saveModule(Module.titleGeneration, title);
+    saveModule(Module.documentChunk, document);
+
+    for (final pair in botsJson.entries) {
+      final json = pair.value..["name"] = pair.key;
+      botBox.put(Bot.fromJson(json));
+    }
+    for (final pair in apisJson.entries) {
+      final json = pair.value..["name"] = pair.key;
+      apiBox.put(Api.fromJson(json));
+    }
+    for (final pair in modelsJson.entries) {
+      final json = pair.value..["id"] = pair.key;
+      modelBox.put(Model.fromJson(json));
+    }
+  }
+
   static Future<void> init() async {
     _sep = Platform.pathSeparator;
     _cache = (await getTemporaryDirectory()).path;
@@ -57,9 +136,11 @@ class Config {
       _dir = (await getApplicationSupportDirectory()).path;
     }
 
+    await _initDb();
+    await _migrate();
+
     _initDir();
     _initFile();
-    _fixChatFile();
 
     await Preferences.init();
   }
@@ -105,26 +186,29 @@ class Config {
     final modelsJson = json["models"] ?? {};
     final documentJson = json["document"] ?? {};
 
-    tts = TtsConfig.fromJson(ttsJson);
-    cic = CicConfig.fromJson(imgJson);
-    core = CoreConfig.fromJson(coreJson);
-    image = ImageConfig.fromJson(imageJson);
-    title = TitleConfig.fromJson(titleJson);
-    search = SearchConfig.fromJson(searchJson);
-    vector = VectorConfig.fromJson(vectorJson);
-    document = DocumentConfig.fromJson(documentJson);
+    tts = TextToSpeech.fromJson(ttsJson);
+    cic = ImageCompression.fromJson(imgJson);
+    core = ChatCore.fromJson(coreJson);
+    image = ImageGeneration.fromJson(imageJson);
+    title = TitleGeneration.fromJson(titleJson);
+    search = WebSearch.fromJson(searchJson);
+    vector = VectorStore.fromJson(vectorJson);
+    document = DocumentChunk.fromJson(documentJson);
 
     for (final chat in chatsJson) {
-      chats.add(ChatConfig.fromJson(chat));
+      chats.add(Chat.fromJson(chat));
     }
     for (final pair in botsJson.entries) {
-      bots[pair.key] = BotConfig.fromJson(pair.value);
+      final json = pair.value..["name"] = pair.key;
+      bots[pair.key] = Bot.fromJson(json);
     }
     for (final pair in apisJson.entries) {
-      apis[pair.key] = ApiConfig.fromJson(pair.value);
+      final json = pair.value..["name"] = pair.key;
+      apis[pair.key] = Api.fromJson(json);
     }
     for (final pair in modelsJson.entries) {
-      models[pair.key] = ModelConfig.fromJson(pair.value);
+      final json = pair.value..["id"] = pair.key;
+      models[pair.key] = Model.fromJson(json);
     }
   }
 
@@ -157,19 +241,6 @@ class Config {
       fromJson(jsonDecode(data));
     } else {
       fromJson({});
-    }
-  }
-
-  static void _fixChatFile() {
-    for (final chat in chats) {
-      final fileName = chat.fileName;
-      final oldPath = "$_dir$_sep$fileName";
-      final newPath = chatFilePath(fileName);
-
-      final file = File(oldPath);
-      if (file.existsSync()) {
-        file.renameSync(newPath);
-      }
     }
   }
 }
@@ -283,68 +354,47 @@ class Preferences {
   }
 }
 
-class BotConfig {
-  bool? stream;
-  int? maxTokens;
-  double? temperature;
-  String? systemPrompts;
+@Entity()
+class Module {
+  static const chatCore = "chat_core";
+  static const webSearch = "web_search";
+  static const vectorStore = "vector_store";
+  static const textToSpeech = "text_to_speech";
+  static const documentChunk = "document_chunk";
+  static const titleGeneration = "title_generation";
+  static const imageGeneration = "image_generation";
+  static const imageCompression = "image_compression";
 
-  BotConfig({
-    this.stream,
-    this.maxTokens,
-    this.temperature,
-    this.systemPrompts,
-  });
+  @Id()
+  int id = 0;
 
-  Map toJson() => {
-        "stream": stream,
-        "maxTokens": maxTokens,
-        "temperature": temperature,
-        "systemPrompts": systemPrompts,
-      };
-
-  factory BotConfig.fromJson(Map json) => BotConfig(
-        stream: json["stream"],
-        maxTokens: json["maxTokens"],
-        temperature: json["temperature"],
-        systemPrompts: json["systemPrompts"],
-      );
-}
-
-class ApiConfig {
-  String url;
+  @Index(type: IndexType.value)
+  @Unique(onConflict: ConflictStrategy.replace)
   String key;
-  String? type;
-  List<String> models;
 
-  ApiConfig({
-    required this.url,
+  String value;
+
+  Module({
     required this.key,
-    required this.models,
-    this.type,
+    required this.value,
   });
-
-  Map toJson() => {
-        "url": url,
-        "key": key,
-        "type": type,
-        "models": models,
-      };
-
-  factory ApiConfig.fromJson(Map json) => ApiConfig(
-        url: json["url"],
-        key: json["key"],
-        type: json["type"],
-        models: json["models"].cast<String>(),
-      );
 }
 
-class CoreConfig {
+class ChatCore {
   String? _bot;
-  String? _api;
-  String? _model;
+  set bot(String? value) => _bot = value;
+  String? get bot => Config.bots.containsKey(_bot) ? _bot : null;
 
-  CoreConfig({
+  String? _api;
+  set api(String? value) => _api = value;
+  String? get api => Config.apis.containsKey(_api) ? _api : null;
+
+  String? _model;
+  set model(String? value) => _model = value;
+  String? get model =>
+      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
+
+  ChatCore({
     String? bot,
     String? api,
     String? model,
@@ -352,209 +402,20 @@ class CoreConfig {
         _api = api,
         _model = model;
 
-  String? get bot => Config.bots.containsKey(_bot) ? _bot : null;
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
-
-  set bot(String? value) => _bot = value;
-  set api(String? value) => _api = value;
-  set model(String? value) => _model = value;
-
-  Map toJson() => {
-        "bot": bot,
-        "api": api,
-        "model": model,
-      };
-
-  factory CoreConfig.fromJson(Map json) => CoreConfig(
+  factory ChatCore.fromJson(Map<String, dynamic> json) => ChatCore(
         bot: json["bot"],
         api: json["api"],
         model: json["model"],
       );
-}
 
-class ChatConfig {
-  String time;
-  String title;
-  String fileName;
-
-  ChatConfig({
-    required this.time,
-    required this.title,
-    required this.fileName,
-  });
-
-  Map toJson() => {
-        "time": time,
-        "title": title,
-        "fileName": fileName,
-      };
-
-  factory ChatConfig.fromJson(Map json) => ChatConfig(
-        time: json["time"],
-        title: json["title"],
-        fileName: json["fileName"],
-      );
-}
-
-class TtsConfig {
-  String? _api;
-  String? _model;
-  String? voice;
-
-  TtsConfig({
-    String? api,
-    String? model,
-    this.voice,
-  })  : _api = api,
-        _model = model;
-
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
-
-  set api(String? value) => _api = value;
-  set model(String? value) => _model = value;
-
-  Map toJson() => {
+  Map<String, dynamic> toJson() => {
+        "bot": bot,
         "api": api,
         "model": model,
-        "voice": voice,
       };
-
-  factory TtsConfig.fromJson(Map json) => TtsConfig(
-        api: json["api"],
-        model: json["model"],
-        voice: json["voice"],
-      );
 }
 
-class CicConfig {
-  bool? enable;
-  int? quality;
-  int? minWidth;
-  int? minHeight;
-
-  CicConfig({
-    this.enable,
-    this.quality,
-    this.minWidth,
-    this.minHeight,
-  });
-
-  Map toJson() => {
-        "enable": enable,
-        "quality": quality,
-        "minWidth": minWidth,
-        "minHeight": minHeight,
-      };
-
-  factory CicConfig.fromJson(Map json) => CicConfig(
-        enable: json["enable"],
-        quality: json["quality"],
-        minWidth: json["minWidth"],
-        minHeight: json["minHeight"],
-      );
-}
-
-class ImageConfig {
-  String? _api;
-  String? _model;
-  String? size;
-  String? style;
-  String? quality;
-
-  ImageConfig({
-    String? api,
-    String? model,
-    this.size,
-    this.style,
-    this.quality,
-  })  : _api = api,
-        _model = model;
-
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
-
-  set api(String? value) => _api = value;
-  set model(String? value) => _model = value;
-
-  Map toJson() => {
-        "api": api,
-        "model": model,
-        "size": size,
-        "style": style,
-        "quality": quality,
-      };
-
-  factory ImageConfig.fromJson(Map json) => ImageConfig(
-        api: json["api"],
-        size: json["size"],
-        model: json["model"],
-        style: json["style"],
-        quality: json["quality"],
-      );
-}
-
-class ModelConfig {
-  bool chat;
-  String name;
-
-  ModelConfig({
-    required this.chat,
-    required this.name,
-  });
-
-  Map toJson() => {
-        "chat": chat,
-        "name": name,
-      };
-
-  factory ModelConfig.fromJson(Map json) => ModelConfig(
-        chat: json["chat"],
-        name: json["name"],
-      );
-}
-
-class TitleConfig {
-  bool? enable;
-  String? _api;
-  String? _model;
-  String? prompt;
-
-  TitleConfig({
-    String? api,
-    String? model,
-    this.enable,
-    this.prompt,
-  })  : _api = api,
-        _model = model;
-
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
-
-  set api(String? value) => _api = value;
-  set model(String? value) => _model = value;
-
-  Map toJson() => {
-        "api": api,
-        "model": model,
-        "prompt": prompt,
-        "enable": enable,
-      };
-
-  factory TitleConfig.fromJson(Map json) => TitleConfig(
-        api: json["api"],
-        model: json["model"],
-        prompt: json["prompt"],
-        enable: json["enable"],
-      );
-}
-
-class SearchConfig {
+class WebSearch {
   int? n;
   bool? vector;
   int? queryTime;
@@ -562,7 +423,7 @@ class SearchConfig {
   String? prompt;
   String? searxng;
 
-  SearchConfig({
+  WebSearch({
     this.n,
     this.vector,
     this.prompt,
@@ -571,16 +432,7 @@ class SearchConfig {
     this.fetchTime,
   });
 
-  Map toJson() => {
-        "n": n,
-        "vector": vector,
-        "prompt": prompt,
-        "query": queryTime,
-        "fetch": fetchTime,
-        "searxng": searxng,
-      };
-
-  factory SearchConfig.fromJson(Map json) => SearchConfig(
+  factory WebSearch.fromJson(Map<String, dynamic> json) => WebSearch(
         n: json["n"],
         vector: json["vector"],
         prompt: json["prompt"],
@@ -588,15 +440,31 @@ class SearchConfig {
         fetchTime: json["fetch"],
         searxng: json["searxng"],
       );
+
+  Map<String, dynamic> toJson() => {
+        "n": n,
+        "vector": vector,
+        "prompt": prompt,
+        "query": queryTime,
+        "fetch": fetchTime,
+        "searxng": searxng,
+      };
 }
 
-class VectorConfig {
-  String? _api;
-  String? _model;
+class VectorStore {
   int? batchSize;
   int? dimensions;
 
-  VectorConfig({
+  String? _api;
+  set api(String? value) => _api = value;
+  String? get api => Config.apis.containsKey(_api) ? _api : null;
+
+  String? _model;
+  set model(String? value) => _model = value;
+  String? get model =>
+      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
+
+  VectorStore({
     String? api,
     String? model,
     this.batchSize,
@@ -604,21 +472,14 @@ class VectorConfig {
   })  : _api = api,
         _model = model;
 
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
-
-  set api(String? value) => _api = value;
-  set model(String? value) => _model = value;
-
-  factory VectorConfig.fromJson(Map json) => VectorConfig(
+  factory VectorStore.fromJson(Map<String, dynamic> json) => VectorStore(
         api: json["api"],
         model: json["model"],
         batchSize: json["batchSize"],
         dimensions: json["dimensions"],
       );
 
-  Map toJson() => {
+  Map<String, dynamic> toJson() => {
         "api": api,
         "model": model,
         "batchSize": batchSize,
@@ -626,31 +487,304 @@ class VectorConfig {
       };
 }
 
-class DocumentConfig {
+class TextToSpeech {
+  String? voice;
+
+  String? _api;
+  set api(String? value) => _api = value;
+  String? get api => Config.apis.containsKey(_api) ? _api : null;
+
+  String? _model;
+  set model(String? value) => _model = value;
+  String? get model =>
+      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
+
+  TextToSpeech({
+    String? api,
+    String? model,
+    this.voice,
+  })  : _api = api,
+        _model = model;
+
+  factory TextToSpeech.fromJson(Map<String, dynamic> json) => TextToSpeech(
+        api: json["api"],
+        model: json["model"],
+        voice: json["voice"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "api": api,
+        "model": model,
+        "voice": voice,
+      };
+}
+
+class DocumentChunk {
   int? n;
   int? size;
   int? overlap;
 
-  DocumentConfig({
+  DocumentChunk({
     this.n,
     this.size,
     this.overlap,
   });
 
-  Map toJson() => {
-        "n": n,
-        "size": size,
-        "overlap": overlap,
-      };
-
-  factory DocumentConfig.fromJson(Map json) => DocumentConfig(
+  factory DocumentChunk.fromJson(Map<String, dynamic> json) => DocumentChunk(
         n: json["n"],
         size: json["size"],
         overlap: json["overlap"],
       );
+
+  Map<String, dynamic> toJson() => {
+        "n": n,
+        "size": size,
+        "overlap": overlap,
+      };
 }
 
-const _baseColor = Colors.indigo;
+class TitleGeneration {
+  bool? enable;
+  String? prompt;
+
+  String? _api;
+  set api(String? value) => _api = value;
+  String? get api => Config.apis.containsKey(_api) ? _api : null;
+
+  String? _model;
+  set model(String? value) => _model = value;
+  String? get model =>
+      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
+
+  TitleGeneration({
+    String? api,
+    String? model,
+    this.enable,
+    this.prompt,
+  })  : _api = api,
+        _model = model;
+
+  factory TitleGeneration.fromJson(Map<String, dynamic> json) =>
+      TitleGeneration(
+        api: json["api"],
+        model: json["model"],
+        prompt: json["prompt"],
+        enable: json["enable"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "api": api,
+        "model": model,
+        "prompt": prompt,
+        "enable": enable,
+      };
+}
+
+class ImageGeneration {
+  String? size;
+  String? style;
+  String? quality;
+
+  String? _api;
+  set api(String? value) => _api = value;
+  String? get api => Config.apis.containsKey(_api) ? _api : null;
+
+  String? _model;
+  set model(String? value) => _model = value;
+  String? get model =>
+      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
+
+  ImageGeneration({
+    String? api,
+    String? model,
+    this.size,
+    this.style,
+    this.quality,
+  })  : _api = api,
+        _model = model;
+
+  factory ImageGeneration.fromJson(Map<String, dynamic> json) =>
+      ImageGeneration(
+        api: json["api"],
+        size: json["size"],
+        model: json["model"],
+        style: json["style"],
+        quality: json["quality"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "api": api,
+        "model": model,
+        "size": size,
+        "style": style,
+        "quality": quality,
+      };
+}
+
+class ImageCompression {
+  bool? enable;
+  int? quality;
+  int? minWidth;
+  int? minHeight;
+
+  ImageCompression({
+    this.enable,
+    this.quality,
+    this.minWidth,
+    this.minHeight,
+  });
+
+  factory ImageCompression.fromJson(Map<String, dynamic> json) =>
+      ImageCompression(
+        enable: json["enable"],
+        quality: json["quality"],
+        minWidth: json["minWidth"],
+        minHeight: json["minHeight"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "enable": enable,
+        "quality": quality,
+        "minWidth": minWidth,
+        "minHeight": minHeight,
+      };
+}
+
+@Entity()
+class Bot {
+  @Id()
+  int id = 0;
+
+  @Unique()
+  String name;
+
+  bool? stream;
+  int? maxTokens;
+  double? temperature;
+  String? systemPrompts;
+
+  Bot({
+    required this.name,
+    this.stream,
+    this.maxTokens,
+    this.temperature,
+    this.systemPrompts,
+  });
+
+  factory Bot.fromJson(Map<String, dynamic> json) => Bot(
+        name: json["name"],
+        stream: json["stream"],
+        maxTokens: json["maxTokens"],
+        temperature: json["temperature"],
+        systemPrompts: json["systemPrompts"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "name": name,
+        "stream": stream,
+        "maxTokens": maxTokens,
+        "temperature": temperature,
+        "systemPrompts": systemPrompts,
+      };
+}
+
+@Entity()
+class Api {
+  @Id()
+  int id = 0;
+
+  @Unique()
+  String name;
+
+  String url;
+  String key;
+  String? type;
+  List<String> models;
+
+  Api({
+    required this.url,
+    required this.key,
+    required this.name,
+    required this.models,
+    this.type,
+  });
+
+  factory Api.fromJson(Map<String, dynamic> json) => Api(
+        url: json["url"],
+        key: json["key"],
+        name: json["name"],
+        type: json["type"],
+        models: json["models"].cast<String>(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "url": url,
+        "key": key,
+        "name": name,
+        "type": type,
+        "models": models,
+      };
+}
+
+@Entity()
+class Chat {
+  @Id()
+  int id = 0;
+
+  String core;
+  String title;
+  DateTime time;
+
+  Chat({
+    required this.core,
+    required this.time,
+    required this.title,
+  });
+
+  factory Chat.fromJson(Map<String, dynamic> json) => Chat(
+        core: json["core"],
+        title: json["title"],
+        time: DateTime.fromMillisecondsSinceEpoch(json["time"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "core": core,
+        "title": title,
+        "time": time.millisecondsSinceEpoch,
+      };
+}
+
+@Entity()
+class Model {
+  @Id()
+  int id = 0;
+
+  @Unique()
+  String mid;
+
+  bool chat;
+  String name;
+
+  Model({
+    required this.mid,
+    required this.chat,
+    required this.name,
+  });
+
+  factory Model.fromJson(Map<String, dynamic> json) => Model(
+        mid: json["id"],
+        chat: json["chat"],
+        name: json["name"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": mid,
+        "chat": chat,
+        "name": name,
+      };
+}
+
+const Color _baseColor = Colors.indigo;
 
 final ColorScheme darkColorScheme = ColorScheme.fromSeed(
   brightness: Brightness.dark,
@@ -662,7 +796,7 @@ final ColorScheme lightColorScheme = ColorScheme.fromSeed(
   seedColor: _baseColor,
 );
 
-final darkTheme = ThemeData.dark(useMaterial3: true).copyWith(
+final ThemeData darkTheme = ThemeData.dark(useMaterial3: true).copyWith(
   colorScheme: darkColorScheme,
   bottomSheetTheme: BottomSheetThemeData(
     backgroundColor: darkColorScheme.surface,
@@ -670,7 +804,7 @@ final darkTheme = ThemeData.dark(useMaterial3: true).copyWith(
   appBarTheme: AppBarTheme(color: darkColorScheme.primaryContainer),
 );
 
-final lightTheme = ThemeData.light(useMaterial3: true).copyWith(
+final ThemeData lightTheme = ThemeData.light(useMaterial3: true).copyWith(
   colorScheme: lightColorScheme,
   bottomSheetTheme: BottomSheetThemeData(
     backgroundColor: lightColorScheme.surface,

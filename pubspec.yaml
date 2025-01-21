@@ -45,6 +45,7 @@ dependencies:
   share_plus: ^10.1.2
   url_launcher: ^6.3.1
   audioplayers: ^6.1.0
+  json_annotation: ^4.9.0
   package_info_plus: ^8.1.2
   beautiful_soup_dart: ^0.3.0
   image_gallery_saver_plus: ^3.0.5
@@ -56,6 +57,7 @@ dev_dependencies:
   intl_utils: ^2.8.8
   build_runner: ^2.4.13
   flutter_lints: ^5.0.0
+  json_serializable: ^6.9.0
   objectbox_generator: ^4.0.3
 
 flutter:

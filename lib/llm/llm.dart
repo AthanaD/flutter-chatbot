@@ -49,7 +49,7 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
   Future<dynamic> tts(Message message) async {
     dynamic error;
 
-    final tts = Config.tts;
+    final tts = Config.textToSpeech;
     final model = tts.model!;
     final voice = tts.voice!;
     final api = Config.apis[tts.api]!;
@@ -238,20 +238,20 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
     _chatClient = Client();
     final urls = await _getWebPageUrls(
       text,
-      Config.search.n ?? 64,
+      Config.webSearch.n ?? 64,
     );
     if (urls.isEmpty) throw "No web page found.";
 
-    final duration = Duration(milliseconds: Config.search.fetchTime ?? 2000);
+    final duration = Duration(milliseconds: Config.webSearch.fetchTime ?? 2000);
     var docs = await Isolate.run(() async {
       final loader = WebLoader(urls, timeout: duration);
       return await loader.load();
     });
     if (docs.isEmpty) throw "No web content retrieved.";
 
-    if (Config.search.vector ?? false) {
-      final vector = Config.vector;
-      final document = Config.document;
+    if (Config.webSearch.vector ?? false) {
+      final vector = Config.vectorStore;
+      final document = Config.documentChunk;
       final api = Config.apis[vector.api]!;
 
       final apiUrl = api.url;
@@ -313,7 +313,7 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
     }
 
     final pages = docs.map((it) => "<webPage>\n${it.pageContent}\n</webPage>");
-    final template = Config.search.prompt ??
+    final template = Config.webSearch.prompt ??
         """
 You are now an AI model with internet search capabilities.
 You can answer user questions based on content from the internet.
@@ -348,11 +348,11 @@ You need to answer the user's question based on the above content:
   }
 
   Future<List<String>> _getWebPageUrls(String query, int n) async {
-    final searxng = Config.search.searxng!;
+    final searxng = Config.webSearch.searxng!;
     final baseUrl = searxng.replaceFirst("{text}", query);
 
     final badResponse = Response("Request Timeout", 408);
-    final duration = Duration(milliseconds: Config.search.queryTime ?? 3000);
+    final duration = Duration(milliseconds: Config.webSearch.queryTime ?? 3000);
 
     Uri uriOf(int i) => Uri.parse("$baseUrl&pageno=$i");
     final responses = await Future.wait(List.generate(
@@ -380,13 +380,13 @@ You need to answer the user's question based on the above content:
 }
 
 Future<String> generateTitle(String text) async {
-  if (!(Config.title.enable ?? false)) return text;
+  if (!(Config.titleGeneration.enable ?? false)) return text;
 
-  final model = Config.title.model;
-  final api = Config.apis[Config.title.api];
+  final model = Config.titleGeneration.model;
+  final api = Config.apis[Config.titleGeneration.api];
   if (api == null || model == null) return text;
 
-  final prompt = Config.title.prompt ??
+  final prompt = Config.titleGeneration.prompt ??
       """
 Based on the user input below, generate a concise and relevant title.
 Note: Only return the title text, without any additional content!

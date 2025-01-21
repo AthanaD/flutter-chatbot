@@ -16,6 +16,7 @@
 import "dart:io";
 import "dart:convert";
 import "dart:isolate";
+import "package:path/path.dart";
 import "package:http/http.dart";
 import "package:flutter/material.dart";
 import "package:archive/archive_io.dart";
@@ -24,32 +25,27 @@ import "package:package_info_plus/package_info_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 import "./gen/objectbox.g.dart";
-//import "package:objectbox/objectbox.dart";
+// import "package:objectbox/objectbox.dart";
 
 class Config {
-  static late final ChatCore core;
-  static late final WebSearch search;
-  static late final TextToSpeech tts;
-  static late final ImageCompression cic;
-  static late final VectorStore vector;
-  static late final ImageGeneration image;
-  static late final TitleGeneration title;
-  static late final DocumentChunk document;
+  static late final ChatCore chatCore;
+  static late final WebSearch webSearch;
+  static late final VectorStore vectorStore;
+  static late final TextToSpeech textToSpeech;
+  static late final DocumentChunk documentChunk;
+  static late final TitleGeneration titleGeneration;
+  static late final ImageGeneration imageGeneration;
+  static late final ImageCompression imageCompression;
 
   static final List<Chat> chats = [];
   static final Map<String, Bot> bots = {};
   static final Map<String, Api> apis = {};
   static final Map<String, Model> models = {};
 
-  static late final File _file;
-  static late final String _dir;
-  static late final String _sep;
-  static late final String _cache;
-
-  static const String _chatDir = "chat";
+  static late final String _cacheDir;
+  static late final String _configDir;
   static const String _audioDir = "audio";
   static const String _imageDir = "image";
-  static const String _settingsFile = "settings.json";
 
   static late final Store store;
   static late final Box<Bot> botBox;
@@ -60,7 +56,7 @@ class Config {
 
   static Future<void> _initDb() async {
     store = await openStore(
-      directory: _dir,
+      directory: _configDir,
     );
     botBox = store.box<Bot>();
     apiBox = store.box<Api>();
@@ -69,178 +65,43 @@ class Config {
     moduleBox = store.box<Module>();
   }
 
-  static void saveModule(String key, Object module) {
+  static void saveModule(int id, Object module) {
     moduleBox.put(Module(
-      key: key,
-      value: jsonEncode(module),
+      id: id,
+      json: jsonEncode(module),
     ));
   }
 
-  static Future<void> _migrate() async {
-    final file = File("$_dir$_sep$_settingsFile");
-    if (!file.existsSync()) return;
-
-    final json = jsonDecode(file.readAsStringSync());
-
-    Map<String, dynamic> ttsJson = json["tts"] ?? {};
-    Map<String, dynamic> cicJson = json["cic"] ?? {};
-    Map<String, dynamic> coreJson = json["core"] ?? {};
-    Map<String, dynamic> imageJson = json["image"] ?? {};
-    Map<String, dynamic> titleJson = json["title"] ?? {};
-    Map<String, dynamic> searchJson = json["search"] ?? {};
-    Map<String, dynamic> vectorJson = json["vector"] ?? {};
-    Map<String, dynamic> documentJson = json["document"] ?? {};
-
-    Map<String, dynamic> botsJson = json["bots"] ?? {};
-    Map<String, dynamic> apisJson = json["apis"] ?? {};
-    Map<String, dynamic> modelsJson = json["models"] ?? {};
-
-    final core = ChatCore.fromJson(coreJson);
-    final tts = TextToSpeech.fromJson(ttsJson);
-    final search = WebSearch.fromJson(searchJson);
-    final cic = ImageCompression.fromJson(cicJson);
-    final vector = VectorStore.fromJson(vectorJson);
-    final image = ImageGeneration.fromJson(imageJson);
-    final title = TitleGeneration.fromJson(titleJson);
-    final document = DocumentChunk.fromJson(documentJson);
-
-    saveModule(Module.chatCore, core);
-    saveModule(Module.webSearch, search);
-    saveModule(Module.textToSpeech, tts);
-    saveModule(Module.vectorStore, vector);
-    saveModule(Module.imageCompression, cic);
-    saveModule(Module.imageGeneration, image);
-    saveModule(Module.titleGeneration, title);
-    saveModule(Module.documentChunk, document);
-
-    for (final pair in botsJson.entries) {
-      final json = pair.value..["name"] = pair.key;
-      botBox.put(Bot.fromJson(json));
-    }
-    for (final pair in apisJson.entries) {
-      final json = pair.value..["name"] = pair.key;
-      apiBox.put(Api.fromJson(json));
-    }
-    for (final pair in modelsJson.entries) {
-      final json = pair.value..["id"] = pair.key;
-      modelBox.put(Model.fromJson(json));
-    }
-  }
-
   static Future<void> init() async {
-    _sep = Platform.pathSeparator;
-    _cache = (await getTemporaryDirectory()).path;
+    _cacheDir = (await getTemporaryDirectory()).path;
     if (Platform.isAndroid) {
-      _dir = (await getExternalStorageDirectory())!.path;
+      _configDir = (await getExternalStorageDirectory())!.path;
     } else {
-      _dir = (await getApplicationSupportDirectory()).path;
+      _configDir = (await getApplicationSupportDirectory()).path;
     }
 
     await _initDb();
-    await _migrate();
 
     _initDir();
-    _initFile();
 
     await Preferences.init();
   }
 
-  static Future<void> save() async {
-    await _file.writeAsString(jsonEncode(toJson()));
-  }
-
-  static String chatFilePath(String fileName) =>
-      "$_dir$_sep$_chatDir$_sep$fileName";
   static String audioFilePath(String fileName) =>
-      "$_dir$_sep$_audioDir$_sep$fileName";
+      join(_configDir, _audioDir, fileName);
   static String imageFilePath(String fileName) =>
-      "$_dir$_sep$_imageDir$_sep$fileName";
-  static String cacheFilePath(String fileName) => "$_cache$_sep$fileName";
-
-  static Map toJson() => {
-        "tts": tts,
-        "cic": cic,
-        "core": core,
-        "bots": bots,
-        "apis": apis,
-        "chats": chats,
-        "image": image,
-        "title": title,
-        "search": search,
-        "vector": vector,
-        "models": models,
-        "document": document,
-      };
-
-  static void fromJson(Map json) {
-    final ttsJson = json["tts"] ?? {};
-    final imgJson = json["cic"] ?? {};
-    final coreJson = json["core"] ?? {};
-    final botsJson = json["bots"] ?? {};
-    final apisJson = json["apis"] ?? {};
-    final chatsJson = json["chats"] ?? [];
-    final imageJson = json["image"] ?? {};
-    final titleJson = json["title"] ?? {};
-    final searchJson = json["search"] ?? {};
-    final vectorJson = json["vector"] ?? {};
-    final modelsJson = json["models"] ?? {};
-    final documentJson = json["document"] ?? {};
-
-    tts = TextToSpeech.fromJson(ttsJson);
-    cic = ImageCompression.fromJson(imgJson);
-    core = ChatCore.fromJson(coreJson);
-    image = ImageGeneration.fromJson(imageJson);
-    title = TitleGeneration.fromJson(titleJson);
-    search = WebSearch.fromJson(searchJson);
-    vector = VectorStore.fromJson(vectorJson);
-    document = DocumentChunk.fromJson(documentJson);
-
-    for (final chat in chatsJson) {
-      chats.add(Chat.fromJson(chat));
-    }
-    for (final pair in botsJson.entries) {
-      final json = pair.value..["name"] = pair.key;
-      bots[pair.key] = Bot.fromJson(json);
-    }
-    for (final pair in apisJson.entries) {
-      final json = pair.value..["name"] = pair.key;
-      apis[pair.key] = Api.fromJson(json);
-    }
-    for (final pair in modelsJson.entries) {
-      final json = pair.value..["id"] = pair.key;
-      models[pair.key] = Model.fromJson(json);
-    }
-  }
+      join(_configDir, _imageDir, fileName);
+  static String cacheFilePath(String fileName) => join(_cacheDir, fileName);
 
   static void _initDir() {
-    final chatPath = "$_dir$_sep$_chatDir";
-    final chatDir = Directory(chatPath);
-    if (!(chatDir.existsSync())) {
-      chatDir.createSync();
-    }
-
-    final imagePath = "$_dir$_sep$_imageDir";
-    final imageDir = Directory(imagePath);
-    if (!(imageDir.existsSync())) {
-      imageDir.createSync();
-    }
-
-    final audioPath = "$_dir$_sep$_audioDir";
-    final audioDir = Directory(audioPath);
+    final audioDir = Directory(join(_configDir, _audioDir));
     if (!(audioDir.existsSync())) {
       audioDir.createSync();
     }
-  }
 
-  static void _initFile() {
-    final path = "$_dir$_sep$_settingsFile";
-    _file = File(path);
-
-    if (_file.existsSync()) {
-      final data = _file.readAsStringSync();
-      fromJson(jsonDecode(data));
-    } else {
-      fromJson({});
+    final imageDir = Directory(join(_configDir, _imageDir));
+    if (!(imageDir.existsSync())) {
+      imageDir.createSync();
     }
   }
 }
@@ -248,8 +109,8 @@ class Config {
 class Backup {
   static Future<void> exportConfig(String to) async {
     final time = DateTime.now().millisecondsSinceEpoch.toString();
-    final path = "$to${Config._sep}chatbot-backup-$time.zip";
-    final root = Directory(Config._dir);
+    final path = join(to, "chatbot-backup-$time.zip");
+    final root = Directory(Config._configDir);
 
     await Isolate.run(() async {
       final encoder = ZipFileEncoder();
@@ -267,7 +128,7 @@ class Backup {
   }
 
   static Future<void> importConfig(String from) async {
-    final root = Config._dir;
+    final root = Config._configDir;
 
     await Isolate.run(() async {
       await extractFileToDisk(from, root);
@@ -275,12 +136,11 @@ class Backup {
   }
 
   static Future<void> clearData(List<String> dirs) async {
-    final root = Config._dir;
-    final sep = Config._sep;
+    final root = Config._configDir;
 
     await Isolate.run(() async {
       for (final dir in dirs) {
-        final directory = Directory("$root$sep$dir");
+        final directory = Directory(join(root, dir));
         if (!directory.existsSync()) continue;
         directory.deleteSync(recursive: true);
       }
@@ -356,27 +216,23 @@ class Preferences {
 
 @Entity()
 class Module {
-  static const chatCore = "chat_core";
-  static const webSearch = "web_search";
-  static const vectorStore = "vector_store";
-  static const textToSpeech = "text_to_speech";
-  static const documentChunk = "document_chunk";
-  static const titleGeneration = "title_generation";
-  static const imageGeneration = "image_generation";
-  static const imageCompression = "image_compression";
+  static const int chatCore = 1;
+  static const int webSearch = 2;
+  static const int vectorStore = 3;
+  static const int textToSpeech = 4;
+  static const int documentChunk = 5;
+  static const int titleGeneration = 6;
+  static const int imageGeneration = 7;
+  static const int imageCompression = 8;
 
-  @Id()
-  int id = 0;
+  @Id(assignable: true)
+  int id;
 
-  @Index(type: IndexType.value)
-  @Unique(onConflict: ConflictStrategy.replace)
-  String key;
-
-  String value;
+  String json;
 
   Module({
-    required this.key,
-    required this.value,
+    required this.id,
+    required this.json,
   });
 }
 
@@ -733,7 +589,12 @@ class Chat {
 
   String core;
   String title;
+
+  @Property(type: PropertyType.date)
   DateTime time;
+
+  @Backlink("chat")
+  final messages = ToMany<Message>();
 
   Chat({
     required this.core,
@@ -752,6 +613,37 @@ class Chat {
         "title": title,
         "time": time.millisecondsSinceEpoch,
       };
+}
+
+@Entity()
+class Message {
+  static const int user = 0;
+  static const int assistant = 1;
+
+  @Id()
+  int id = 0;
+
+  int role;
+  String? text;
+  String? model;
+
+  @Property(type: PropertyType.date)
+  DateTime time;
+
+  List<String> images;
+  final chat = ToOne<Chat>();
+
+  Message({
+    required this.role,
+    required this.time,
+    required this.images,
+  });
+
+  @Transient()
+  bool get isUser => role == user;
+
+  @Transient()
+  bool get isAssistant => role == assistant;
 }
 
 @Entity()

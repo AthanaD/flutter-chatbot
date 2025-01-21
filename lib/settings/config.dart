@@ -57,19 +57,19 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.bot),
           contentPadding: padding,
-          subtitle: Text(Config.core.bot ?? s.empty),
+          subtitle: Text(Config.chatCore.bot ?? s.empty),
           onTap: () async {
             if (Config.bots.isEmpty) return;
 
             final bot = await Dialogs.select(
               context: context,
               list: Config.bots.keys.toList(),
-              selected: Config.core.bot,
+              selected: Config.chatCore.bot,
               title: s.choose_bot,
             );
             if (bot == null) return;
 
-            setState(() => Config.core.bot = bot);
+            setState(() => Config.chatCore.bot = bot);
             Config.save();
           },
         ),
@@ -77,19 +77,19 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.api),
           contentPadding: padding,
-          subtitle: Text(Config.core.api ?? s.empty),
+          subtitle: Text(Config.chatCore.api ?? s.empty),
           onTap: () async {
             if (Config.apis.isEmpty) return;
 
             final api = await Dialogs.select(
               context: context,
               list: Config.apis.keys.toList(),
-              selected: Config.core.api,
+              selected: Config.chatCore.api,
               title: s.choose_api,
             );
             if (api == null) return;
 
-            setState(() => Config.core.api = api);
+            setState(() => Config.chatCore.api = api);
             ref.read(chatProvider.notifier).notify();
             Config.save();
           },
@@ -98,20 +98,20 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.model),
           contentPadding: padding,
-          subtitle: Text(Config.core.model ?? s.empty),
+          subtitle: Text(Config.chatCore.model ?? s.empty),
           onTap: () async {
-            final models = Config.apis[Config.core.api]?.models;
+            final models = Config.apis[Config.chatCore.api]?.models;
             if (models == null) return;
 
             final model = await Dialogs.select(
               context: context,
-              selected: Config.core.model,
+              selected: Config.chatCore.model,
               title: s.choose_model,
               list: models,
             );
             if (model == null) return;
 
-            setState(() => Config.core.model = model);
+            setState(() => Config.chatCore.model = model);
             ref.read(chatProvider.notifier).notify();
             Config.save();
           },
@@ -126,19 +126,19 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.api),
           contentPadding: padding,
-          subtitle: Text(Config.tts.api ?? s.empty),
+          subtitle: Text(Config.textToSpeech.api ?? s.empty),
           onTap: () async {
             if (Config.apis.isEmpty) return;
 
             final api = await Dialogs.select(
               context: context,
               list: Config.apis.keys.toList(),
-              selected: Config.tts.api,
+              selected: Config.textToSpeech.api,
               title: s.choose_api,
             );
             if (api == null) return;
 
-            setState(() => Config.tts.api = api);
+            setState(() => Config.textToSpeech.api = api);
             Config.save();
           },
         ),
@@ -146,20 +146,20 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.model),
           contentPadding: padding,
-          subtitle: Text(Config.tts.model ?? s.empty),
+          subtitle: Text(Config.textToSpeech.model ?? s.empty),
           onTap: () async {
-            final models = Config.apis[Config.tts.api]?.models;
+            final models = Config.apis[Config.textToSpeech.api]?.models;
             if (models == null) return;
 
             final model = await Dialogs.select(
               context: context,
-              selected: Config.tts.model,
+              selected: Config.textToSpeech.model,
               title: s.choose_model,
               list: models,
             );
             if (model == null) return;
 
-            setState(() => Config.tts.model = model);
+            setState(() => Config.textToSpeech.model = model);
             Config.save();
           },
         ),
@@ -167,7 +167,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.voice),
           contentPadding: padding,
-          subtitle: Text(Config.tts.voice ?? s.empty),
+          subtitle: Text(Config.textToSpeech.voice ?? s.empty),
           onTap: () async {
             final texts = await Dialogs.input(
               context: context,
@@ -175,7 +175,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
               fields: [
                 InputDialogField(
                   label: s.please_input,
-                  text: Config.tts.voice,
+                  text: Config.textToSpeech.voice,
                 ),
               ],
             );
@@ -185,7 +185,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
             final text = texts[0].trim();
             if (text.isNotEmpty) voice = text;
 
-            setState(() => Config.tts.voice = voice);
+            setState(() => Config.textToSpeech.voice = voice);
             Config.save();
           },
         ),
@@ -199,10 +199,10 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         CheckboxListTile(
           title: Text(s.enable),
           contentPadding: const EdgeInsets.only(left: 24, right: 16),
-          value: Config.cic.enable ?? true,
+          value: Config.imageCompression.enable ?? true,
           subtitle: Text(s.image_enable_hint),
           onChanged: (value) {
-            setState(() => Config.cic.enable = value);
+            setState(() => Config.imageCompression.enable = value);
             Config.save();
           },
         ),
@@ -210,7 +210,8 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.quality),
           contentPadding: padding,
-          subtitle: Text(Config.cic.quality?.toString() ?? s.empty),
+          subtitle:
+              Text(Config.imageCompression.quality?.toString() ?? s.empty),
           onTap: () async {
             final texts = await Dialogs.input(
               context: context,
@@ -218,7 +219,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
               fields: [
                 InputDialogField(
                   label: s.please_input,
-                  text: Config.cic.quality?.toString(),
+                  text: Config.imageCompression.quality?.toString(),
                 ),
               ],
             );
@@ -231,7 +232,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
               if (quality == null) return;
             }
 
-            setState(() => Config.cic.quality = quality);
+            setState(() => Config.imageCompression.quality = quality);
             Config.save();
           },
         ),
@@ -240,8 +241,8 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
           title: Text(s.min_width_height),
           contentPadding: padding,
           subtitle: Text(
-            "${Config.cic.minWidth ?? s.empty} x "
-            "${Config.cic.minHeight ?? s.empty}",
+            "${Config.imageCompression.minWidth ?? s.empty} x "
+            "${Config.imageCompression.minHeight ?? s.empty}",
           ),
           onTap: () async {
             final texts = await Dialogs.input(
@@ -250,11 +251,11 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
               fields: [
                 InputDialogField(
                   label: s.min_width,
-                  text: Config.cic.minWidth?.toString(),
+                  text: Config.imageCompression.minWidth?.toString(),
                 ),
                 InputDialogField(
                   label: s.min_height,
-                  text: Config.cic.minHeight?.toString(),
+                  text: Config.imageCompression.minHeight?.toString(),
                 ),
               ],
             );
@@ -274,8 +275,8 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
             }
 
             setState(() {
-              Config.cic.minWidth = minWidth;
-              Config.cic.minHeight = minHeight;
+              Config.imageCompression.minWidth = minWidth;
+              Config.imageCompression.minHeight = minHeight;
             });
             Config.save();
           },

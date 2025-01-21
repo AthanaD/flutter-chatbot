@@ -47,19 +47,19 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
         ListTile(
           title: Text(s.api),
           contentPadding: padding,
-          subtitle: Text(Config.vector.api ?? s.empty),
+          subtitle: Text(Config.vectorStore.api ?? s.empty),
           onTap: () async {
             if (Config.apis.isEmpty) return;
 
             final api = await Dialogs.select(
               context: context,
               list: Config.apis.keys.toList(),
-              selected: Config.vector.api,
+              selected: Config.vectorStore.api,
               title: s.choose_api,
             );
             if (api == null) return;
 
-            setState(() => Config.vector.api = api);
+            setState(() => Config.vectorStore.api = api);
             Config.save();
           },
         ),
@@ -67,20 +67,20 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
         ListTile(
           title: Text(s.model),
           contentPadding: padding,
-          subtitle: Text(Config.vector.model ?? s.empty),
+          subtitle: Text(Config.vectorStore.model ?? s.empty),
           onTap: () async {
-            final models = Config.apis[Config.vector.api]?.models;
+            final models = Config.apis[Config.vectorStore.api]?.models;
             if (models == null) return;
 
             final model = await Dialogs.select(
               context: context,
-              selected: Config.vector.model,
+              selected: Config.vectorStore.model,
               title: s.choose_model,
               list: models,
             );
             if (model == null) return;
 
-            setState(() => Config.vector.model = model);
+            setState(() => Config.vectorStore.model = model);
             Config.save();
           },
         ),
@@ -97,7 +97,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
                 InputDialogField(
                   label: s.please_input,
                   hint: "64",
-                  text: Config.vector.batchSize?.toString(),
+                  text: Config.vectorStore.batchSize?.toString(),
                 ),
               ],
             );
@@ -110,7 +110,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
               if (value == null) return;
             }
 
-            Config.vector.batchSize = value;
+            Config.vectorStore.batchSize = value;
             Config.save();
           },
         ),
@@ -126,7 +126,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
               fields: [
                 InputDialogField(
                   label: s.please_input,
-                  text: Config.vector.dimensions?.toString(),
+                  text: Config.vectorStore.dimensions?.toString(),
                 ),
               ],
             );
@@ -139,7 +139,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
               if (value == null) return;
             }
 
-            Config.vector.dimensions = value;
+            Config.vectorStore.dimensions = value;
             Config.save();
           },
         ),
@@ -165,7 +165,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
                 InputDialogField(
                   label: s.please_input,
                   hint: "8",
-                  text: Config.document.n?.toString(),
+                  text: Config.documentChunk.n?.toString(),
                 ),
               ],
             );
@@ -178,7 +178,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
               if (value == null) return;
             }
 
-            Config.document.n = value;
+            Config.documentChunk.n = value;
             Config.save();
           },
         ),
@@ -195,7 +195,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
                 InputDialogField(
                   label: s.please_input,
                   hint: "2000",
-                  text: Config.document.size?.toString(),
+                  text: Config.documentChunk.size?.toString(),
                 ),
               ],
             );
@@ -208,7 +208,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
               if (value == null) return;
             }
 
-            Config.document.size = value;
+            Config.documentChunk.size = value;
             Config.save();
           },
         ),
@@ -225,7 +225,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
                 InputDialogField(
                   label: s.please_input,
                   hint: "100",
-                  text: Config.document.overlap?.toString(),
+                  text: Config.documentChunk.overlap?.toString(),
                 ),
               ],
             );
@@ -238,7 +238,7 @@ class _DocumentTabState extends ConsumerState<DocumentTab> {
               if (value == null) return;
             }
 
-            Config.document.overlap = value;
+            Config.documentChunk.overlap = value;
             Config.save();
           },
         ),

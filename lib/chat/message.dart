@@ -678,7 +678,7 @@ class _MessageWidgetState extends ConsumerState<MessageWidget> {
     final text = message.item.text;
     if (text.isEmpty) return;
 
-    final tts = Config.tts;
+    final tts = Config.textToSpeech;
     final ttsOk = tts.api != null && tts.model != null && tts.voice != null;
 
     if (!ttsOk) {

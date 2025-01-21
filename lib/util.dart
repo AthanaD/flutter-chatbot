@@ -97,8 +97,8 @@ class Util {
     }
 
     if (Preferences.search) {
-      final search = Config.search;
-      final vector = Config.vector;
+      final search = Config.webSearch;
+      final vector = Config.vectorStore;
       final vectorOk = vector.api != null && vector.model != null;
       final searchOk = Preferences.googleSearch || search.searxng != null;
 

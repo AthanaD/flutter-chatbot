@@ -129,7 +129,7 @@ class _GenerateTabState extends ConsumerState<GenerateTab>
     final prompt = _ctrl.text;
     if (prompt.isEmpty) return;
 
-    final image = Config.image;
+    final image = Config.imageGeneration;
     final model = image.model;
     final api = Config.apis[image.api];
 
@@ -207,7 +207,7 @@ class _GenerateTabState extends ConsumerState<GenerateTab>
   }
 
   double _getAspectRatio() {
-    final size = Config.image.size;
+    final size = Config.imageGeneration.size;
     if (size == null) return 1;
 
     final pos = size.indexOf('x');

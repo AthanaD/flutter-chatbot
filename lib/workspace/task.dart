@@ -48,9 +48,9 @@ class _TaskTabState extends ConsumerState<TaskTab> {
           title: Text(s.enable),
           subtitle: Text(s.title_enable_hint),
           contentPadding: const EdgeInsets.only(left: 24, right: 16),
-          value: Config.title.enable ?? false,
+          value: Config.titleGeneration.enable ?? false,
           onChanged: (value) {
-            setState(() => Config.title.enable = value);
+            setState(() => Config.titleGeneration.enable = value);
             Config.save();
           },
         ),
@@ -58,19 +58,19 @@ class _TaskTabState extends ConsumerState<TaskTab> {
         ListTile(
           title: Text(s.api),
           contentPadding: padding,
-          subtitle: Text(Config.title.api ?? s.empty),
+          subtitle: Text(Config.titleGeneration.api ?? s.empty),
           onTap: () async {
             if (Config.apis.isEmpty) return;
 
             final api = await Dialogs.select(
               context: context,
               list: Config.apis.keys.toList(),
-              selected: Config.title.api,
+              selected: Config.titleGeneration.api,
               title: s.choose_api,
             );
             if (api == null) return;
 
-            setState(() => Config.title.api = api);
+            setState(() => Config.titleGeneration.api = api);
             Config.save();
           },
         ),
@@ -78,20 +78,20 @@ class _TaskTabState extends ConsumerState<TaskTab> {
         ListTile(
           title: Text(s.model),
           contentPadding: padding,
-          subtitle: Text(Config.title.model ?? s.empty),
+          subtitle: Text(Config.titleGeneration.model ?? s.empty),
           onTap: () async {
-            final models = Config.apis[Config.title.api]?.models;
+            final models = Config.apis[Config.titleGeneration.api]?.models;
             if (models == null) return;
 
             final model = await Dialogs.select(
               context: context,
-              selected: Config.title.model,
+              selected: Config.titleGeneration.model,
               title: s.choose_model,
               list: models,
             );
             if (model == null) return;
 
-            setState(() => Config.title.model = model);
+            setState(() => Config.titleGeneration.model = model);
             Config.save();
           },
         ),
@@ -107,7 +107,7 @@ class _TaskTabState extends ConsumerState<TaskTab> {
               fields: [
                 InputDialogField(
                   label: s.please_input,
-                  text: Config.title.prompt,
+                  text: Config.titleGeneration.prompt,
                   maxLines: null,
                 ),
               ],
@@ -118,7 +118,7 @@ class _TaskTabState extends ConsumerState<TaskTab> {
             final text = texts[0].trim();
             if (text.isNotEmpty) prompt = text;
 
-            Config.title.prompt = prompt;
+            Config.titleGeneration.prompt = prompt;
             Config.save();
           },
         ),
@@ -136,9 +136,9 @@ class _TaskTabState extends ConsumerState<TaskTab> {
           title: Text(s.search_vector),
           subtitle: Text(s.search_vector_hint),
           contentPadding: const EdgeInsets.only(left: 24, right: 16),
-          value: Config.search.vector ?? false,
+          value: Config.webSearch.vector ?? false,
           onChanged: (value) {
-            setState(() => Config.search.vector = value);
+            setState(() => Config.webSearch.vector = value);
             Config.save();
           },
         ),
@@ -151,7 +151,7 @@ class _TaskTabState extends ConsumerState<TaskTab> {
             String? base;
             String? extra;
 
-            final searxng = Config.search.searxng;
+            final searxng = Config.webSearch.searxng;
             const fixedPart = "q={text}&format=json";
 
             if (searxng != null) {
@@ -195,7 +195,7 @@ class _TaskTabState extends ConsumerState<TaskTab> {
               if (newExtra != null) full += "&$newExtra";
             }
 
-            Config.search.searxng = full;
+            Config.webSearch.searxng = full;
             Config.save();
           },
         ),
@@ -213,13 +213,13 @@ class _TaskTabState extends ConsumerState<TaskTab> {
                   hint: "3000",
                   label: s.search_timeout_query,
                   help: s.search_timeout_query_help,
-                  text: Config.search.queryTime?.toString(),
+                  text: Config.webSearch.queryTime?.toString(),
                 ),
                 InputDialogField(
                   hint: "2000",
                   label: s.search_timeout_fetch,
                   help: s.search_timeout_fetch_help,
-                  text: Config.search.fetchTime?.toString(),
+                  text: Config.webSearch.fetchTime?.toString(),
                 ),
               ],
             );
@@ -238,8 +238,8 @@ class _TaskTabState extends ConsumerState<TaskTab> {
               if (fetch == null) return;
             }
 
-            Config.search.queryTime = query;
-            Config.search.fetchTime = fetch;
+            Config.webSearch.queryTime = query;
+            Config.webSearch.fetchTime = fetch;
             Config.save();
           },
         ),
@@ -256,7 +256,7 @@ class _TaskTabState extends ConsumerState<TaskTab> {
                 InputDialogField(
                   label: s.please_input,
                   hint: "64",
-                  text: Config.search.n?.toString(),
+                  text: Config.webSearch.n?.toString(),
                 ),
               ],
             );
@@ -269,7 +269,7 @@ class _TaskTabState extends ConsumerState<TaskTab> {
               if (n == null) return;
             }
 
-            Config.search.n = n;
+            Config.webSearch.n = n;
             Config.save();
           },
         ),
@@ -285,7 +285,7 @@ class _TaskTabState extends ConsumerState<TaskTab> {
               fields: [
                 InputDialogField(
                   label: s.please_input,
-                  text: Config.search.prompt,
+                  text: Config.webSearch.prompt,
                 ),
               ],
             );
@@ -295,7 +295,7 @@ class _TaskTabState extends ConsumerState<TaskTab> {
             final text = texts[0].trim();
             if (text.isNotEmpty) prompt = text;
 
-            Config.search.prompt = prompt;
+            Config.webSearch.prompt = prompt;
             Config.save();
           },
         ),

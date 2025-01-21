@@ -25,7 +25,7 @@ class Current {
   static File? _file;
   static Chat? _chat;
 
-  static ChatCore core = Config.core;
+  static ChatCore core = Config.chatCore;
   static final List<Message> messages = [];
   static TtsStatus ttsStatus = TtsStatus.nothing;
   static ChatStatus chatStatus = ChatStatus.nothing;
@@ -46,7 +46,7 @@ class Current {
       messages.add(Message.fromJson(message));
     }
 
-    core = coreJson != null ? ChatCore.fromJson(coreJson) : Config.core;
+    core = coreJson != null ? ChatCore.fromJson(coreJson) : Config.chatCore;
   }
 
   static Future<void> save() async {
@@ -60,7 +60,7 @@ class Current {
     _chat = null;
     _file = null;
     messages.clear();
-    core = Config.core;
+    core = Config.chatCore;
   }
 
   static void newChat(String title) {

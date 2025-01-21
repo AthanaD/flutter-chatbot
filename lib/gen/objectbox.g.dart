@@ -20,39 +20,39 @@ export 'package:objectbox/objectbox.dart'; // so that callers only have to impor
 
 final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(1, 5159862772342561879),
+      id: const obx_int.IdUid(1, 1436097553832364606),
       name: 'Api',
-      lastPropertyId: const obx_int.IdUid(6, 4368209173055600208),
+      lastPropertyId: const obx_int.IdUid(6, 8225059235534185324),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 2997921667894422291),
+            id: const obx_int.IdUid(1, 5170723995934595876),
             name: 'id',
             type: 6,
             flags: 1),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 3309462228560676299),
+            id: const obx_int.IdUid(2, 2997179544550146031),
             name: 'name',
             type: 9,
             flags: 2080,
-            indexId: const obx_int.IdUid(1, 2195850094439964976)),
+            indexId: const obx_int.IdUid(1, 6458725584281519089)),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 8755228808218806165),
+            id: const obx_int.IdUid(3, 8896530534218139854),
             name: 'url',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(4, 8182041317473480429),
+            id: const obx_int.IdUid(4, 6189446974639745663),
             name: 'key',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(5, 4827309923050169710),
+            id: const obx_int.IdUid(5, 6436408169352205523),
             name: 'type',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(6, 4368209173055600208),
+            id: const obx_int.IdUid(6, 8225059235534185324),
             name: 'models',
             type: 30,
             flags: 0)
@@ -60,39 +60,39 @@ final _entities = <obx_int.ModelEntity>[
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(2, 1471252532006706842),
+      id: const obx_int.IdUid(2, 83615276122387898),
       name: 'Bot',
-      lastPropertyId: const obx_int.IdUid(6, 1298185398955275388),
+      lastPropertyId: const obx_int.IdUid(6, 8276196970696486526),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 2364097877047185363),
+            id: const obx_int.IdUid(1, 2342948153894516355),
             name: 'id',
             type: 6,
             flags: 1),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 8619370723574490118),
+            id: const obx_int.IdUid(2, 3897656073549387857),
             name: 'name',
             type: 9,
             flags: 2080,
-            indexId: const obx_int.IdUid(2, 7435114004808121384)),
+            indexId: const obx_int.IdUid(2, 8067376861756927228)),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 8133177946877353053),
+            id: const obx_int.IdUid(3, 4122186654303064712),
             name: 'stream',
             type: 1,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(4, 4803744988919796585),
+            id: const obx_int.IdUid(4, 565719288179581130),
             name: 'maxTokens',
             type: 6,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(5, 4977694286073727329),
+            id: const obx_int.IdUid(5, 8768461940577432869),
             name: 'temperature',
             type: 8,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(6, 1298185398955275388),
+            id: const obx_int.IdUid(6, 8276196970696486526),
             name: 'systemPrompts',
             type: 9,
             flags: 0)
@@ -100,58 +100,107 @@ final _entities = <obx_int.ModelEntity>[
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(3, 5444855688434910302),
+      id: const obx_int.IdUid(3, 8058240112658419100),
       name: 'Chat',
-      lastPropertyId: const obx_int.IdUid(4, 7785727273704394352),
+      lastPropertyId: const obx_int.IdUid(4, 9178198020049665044),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 1147510379973621264),
+            id: const obx_int.IdUid(1, 2453760756462739467),
             name: 'id',
             type: 6,
             flags: 1),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 2908162376476308280),
+            id: const obx_int.IdUid(2, 503335353304530701),
             name: 'core',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 4874093300014296547),
+            id: const obx_int.IdUid(3, 6455240078551592144),
             name: 'title',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(4, 7785727273704394352),
+            id: const obx_int.IdUid(4, 9178198020049665044),
             name: 'time',
             type: 10,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
-      backlinks: <obx_int.ModelBacklink>[]),
+      backlinks: <obx_int.ModelBacklink>[
+        obx_int.ModelBacklink(
+            name: 'messages', srcEntity: 'Message', srcField: 'chat')
+      ]),
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(4, 3477884625159293459),
-      name: 'Model',
-      lastPropertyId: const obx_int.IdUid(4, 8924721507289376554),
+      id: const obx_int.IdUid(4, 8366934158333274553),
+      name: 'Message',
+      lastPropertyId: const obx_int.IdUid(7, 7687382251090611306),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 1614436098327889188),
+            id: const obx_int.IdUid(1, 8390074213584836562),
             name: 'id',
             type: 6,
             flags: 1),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 5527390429831254032),
+            id: const obx_int.IdUid(2, 3621880894650682160),
+            name: 'role',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 1439015790938479748),
+            name: 'text',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 2695826120900505692),
+            name: 'model',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 5516053230299101230),
+            name: 'time',
+            type: 10,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 7973510488027656538),
+            name: 'images',
+            type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 7687382251090611306),
+            name: 'chatId',
+            type: 11,
+            flags: 520,
+            indexId: const obx_int.IdUid(3, 4407903048808260618),
+            relationTarget: 'Chat')
+      ],
+      relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(5, 1536373673303655218),
+      name: 'Model',
+      lastPropertyId: const obx_int.IdUid(4, 154238192455794878),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 1114644625782223975),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 3020071297252596716),
             name: 'mid',
             type: 9,
             flags: 2080,
-            indexId: const obx_int.IdUid(3, 644421885015611030)),
+            indexId: const obx_int.IdUid(4, 1864238400284958502)),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 5120139440496431417),
+            id: const obx_int.IdUid(3, 7445059947271451984),
             name: 'chat',
             type: 1,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(4, 8924721507289376554),
+            id: const obx_int.IdUid(4, 154238192455794878),
             name: 'name',
             type: 9,
             flags: 0)
@@ -159,25 +208,19 @@ final _entities = <obx_int.ModelEntity>[
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(5, 7464678747347435965),
+      id: const obx_int.IdUid(6, 1430650410967994389),
       name: 'Module',
-      lastPropertyId: const obx_int.IdUid(3, 872515323232936425),
+      lastPropertyId: const obx_int.IdUid(2, 1643040934871497769),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 3813044977169349850),
+            id: const obx_int.IdUid(1, 6129865942064338879),
             name: 'id',
             type: 6,
-            flags: 1),
+            flags: 129),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 3316567608308923226),
-            name: 'key',
-            type: 9,
-            flags: 32808,
-            indexId: const obx_int.IdUid(4, 7044924610171394896)),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 872515323232936425),
-            name: 'value',
+            id: const obx_int.IdUid(2, 1643040934871497769),
+            name: 'json',
             type: 9,
             flags: 0)
       ],
@@ -220,8 +263,8 @@ Future<obx.Store> openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(5, 7464678747347435965),
-      lastIndexId: const obx_int.IdUid(4, 7044924610171394896),
+      lastEntityId: const obx_int.IdUid(6, 1430650410967994389),
+      lastIndexId: const obx_int.IdUid(4, 1864238400284958502),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [],
@@ -334,7 +377,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
     Chat: obx_int.EntityDefinition<Chat>(
         model: _entities[2],
         toOneRelations: (Chat object) => [],
-        toManyRelations: (Chat object) => {},
+        toManyRelations: (Chat object) => {
+              obx_int.RelInfo<Message>.toOneBacklink(
+                      7, object.id, (Message srcObject) => srcObject.chat):
+                  object.messages
+            },
         getId: (Chat object) => object.id,
         setId: (Chat object, int id) {
           object.id = id;
@@ -362,11 +409,64 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final object = Chat(
               core: coreParam, time: timeParam, title: titleParam)
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
-
+          obx_int.InternalToManyAccess.setRelInfo<Chat>(
+              object.messages,
+              store,
+              obx_int.RelInfo<Message>.toOneBacklink(
+                  7, object.id, (Message srcObject) => srcObject.chat));
+          return object;
+        }),
+    Message: obx_int.EntityDefinition<Message>(
+        model: _entities[3],
+        toOneRelations: (Message object) => [object.chat],
+        toManyRelations: (Message object) => {},
+        getId: (Message object) => object.id,
+        setId: (Message object, int id) {
+          object.id = id;
+        },
+        objectToFB: (Message object, fb.Builder fbb) {
+          final textOffset =
+              object.text == null ? null : fbb.writeString(object.text!);
+          final modelOffset =
+              object.model == null ? null : fbb.writeString(object.model!);
+          final imagesOffset = fbb.writeList(
+              object.images.map(fbb.writeString).toList(growable: false));
+          fbb.startTable(8);
+          fbb.addInt64(0, object.id);
+          fbb.addInt64(1, object.role);
+          fbb.addOffset(2, textOffset);
+          fbb.addOffset(3, modelOffset);
+          fbb.addInt64(4, object.time.millisecondsSinceEpoch);
+          fbb.addOffset(5, imagesOffset);
+          fbb.addInt64(6, object.chat.targetId);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final roleParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0);
+          final timeParam = DateTime.fromMillisecondsSinceEpoch(
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 12, 0));
+          final imagesParam = const fb.ListReader<String>(
+                  fb.StringReader(asciiOptimization: true),
+                  lazy: false)
+              .vTableGet(buffer, rootOffset, 14, []);
+          final object = Message(
+              role: roleParam, time: timeParam, images: imagesParam)
+            ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
+            ..text = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 8)
+            ..model = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 10);
+          object.chat.targetId =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 16, 0);
+          object.chat.attach(store);
           return object;
         }),
     Model: obx_int.EntityDefinition<Model>(
-        model: _entities[3],
+        model: _entities[4],
         toOneRelations: (Model object) => [],
         toManyRelations: (Model object) => {},
         getId: (Model object) => object.id,
@@ -399,7 +499,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           return object;
         }),
     Module: obx_int.EntityDefinition<Module>(
-        model: _entities[4],
+        model: _entities[5],
         toOneRelations: (Module object) => [],
         toManyRelations: (Module object) => {},
         getId: (Module object) => object.id,
@@ -407,24 +507,21 @@ obx_int.ModelDefinition getObjectBoxModel() {
           object.id = id;
         },
         objectToFB: (Module object, fb.Builder fbb) {
-          final keyOffset = fbb.writeString(object.key);
-          final valueOffset = fbb.writeString(object.value);
-          fbb.startTable(4);
+          final jsonOffset = fbb.writeString(object.json);
+          fbb.startTable(3);
           fbb.addInt64(0, object.id);
-          fbb.addOffset(1, keyOffset);
-          fbb.addOffset(2, valueOffset);
+          fbb.addOffset(1, jsonOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
         objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
-          final keyParam = const fb.StringReader(asciiOptimization: true)
+          final idParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+          final jsonParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 6, '');
-          final valueParam = const fb.StringReader(asciiOptimization: true)
-              .vTableGet(buffer, rootOffset, 8, '');
-          final object = Module(key: keyParam, value: valueParam)
-            ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+          final object = Module(id: idParam, json: jsonParam);
 
           return object;
         })
@@ -494,36 +591,66 @@ class Chat_ {
 
   /// See [Chat.time].
   static final time = obx.QueryDateProperty<Chat>(_entities[2].properties[3]);
+
+  /// see [Chat.messages]
+  static final messages = obx.QueryBacklinkToMany<Message, Chat>(Message_.chat);
+}
+
+/// [Message] entity fields to define ObjectBox queries.
+class Message_ {
+  /// See [Message.id].
+  static final id =
+      obx.QueryIntegerProperty<Message>(_entities[3].properties[0]);
+
+  /// See [Message.role].
+  static final role =
+      obx.QueryIntegerProperty<Message>(_entities[3].properties[1]);
+
+  /// See [Message.text].
+  static final text =
+      obx.QueryStringProperty<Message>(_entities[3].properties[2]);
+
+  /// See [Message.model].
+  static final model =
+      obx.QueryStringProperty<Message>(_entities[3].properties[3]);
+
+  /// See [Message.time].
+  static final time =
+      obx.QueryDateProperty<Message>(_entities[3].properties[4]);
+
+  /// See [Message.images].
+  static final images =
+      obx.QueryStringVectorProperty<Message>(_entities[3].properties[5]);
+
+  /// See [Message.chat].
+  static final chat =
+      obx.QueryRelationToOne<Message, Chat>(_entities[3].properties[6]);
 }
 
 /// [Model] entity fields to define ObjectBox queries.
 class Model_ {
   /// See [Model.id].
-  static final id = obx.QueryIntegerProperty<Model>(_entities[3].properties[0]);
+  static final id = obx.QueryIntegerProperty<Model>(_entities[4].properties[0]);
 
   /// See [Model.mid].
-  static final mid = obx.QueryStringProperty<Model>(_entities[3].properties[1]);
+  static final mid = obx.QueryStringProperty<Model>(_entities[4].properties[1]);
 
   /// See [Model.chat].
   static final chat =
-      obx.QueryBooleanProperty<Model>(_entities[3].properties[2]);
+      obx.QueryBooleanProperty<Model>(_entities[4].properties[2]);
 
   /// See [Model.name].
   static final name =
-      obx.QueryStringProperty<Model>(_entities[3].properties[3]);
+      obx.QueryStringProperty<Model>(_entities[4].properties[3]);
 }
 
 /// [Module] entity fields to define ObjectBox queries.
 class Module_ {
   /// See [Module.id].
   static final id =
-      obx.QueryIntegerProperty<Module>(_entities[4].properties[0]);
+      obx.QueryIntegerProperty<Module>(_entities[5].properties[0]);
 
-  /// See [Module.key].
-  static final key =
-      obx.QueryStringProperty<Module>(_entities[4].properties[1]);
-
-  /// See [Module.value].
-  static final value =
-      obx.QueryStringProperty<Module>(_entities[4].properties[2]);
+  /// See [Module.json].
+  static final json =
+      obx.QueryStringProperty<Module>(_entities[5].properties[1]);
 }

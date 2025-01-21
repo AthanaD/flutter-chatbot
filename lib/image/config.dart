@@ -50,19 +50,19 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.api),
           contentPadding: padding,
-          subtitle: Text(Config.image.api ?? s.empty),
+          subtitle: Text(Config.imageGeneration.api ?? s.empty),
           onTap: () async {
             if (Config.apis.isEmpty) return;
 
             final api = await Dialogs.select(
               context: context,
               list: Config.apis.keys.toList(),
-              selected: Config.image.api,
+              selected: Config.imageGeneration.api,
               title: s.choose_api,
             );
             if (api == null) return;
 
-            setState(() => Config.image.api = api);
+            setState(() => Config.imageGeneration.api = api);
             Config.save();
           },
         ),
@@ -70,20 +70,20 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.model),
           contentPadding: padding,
-          subtitle: Text(Config.image.model ?? s.empty),
+          subtitle: Text(Config.imageGeneration.model ?? s.empty),
           onTap: () async {
-            final models = Config.apis[Config.image.api]?.models;
+            final models = Config.apis[Config.imageGeneration.api]?.models;
             if (models == null) return;
 
             final model = await Dialogs.select(
               context: context,
-              selected: Config.image.model,
+              selected: Config.imageGeneration.model,
               title: s.choose_model,
               list: models,
             );
             if (model == null) return;
 
-            setState(() => Config.image.model = model);
+            setState(() => Config.imageGeneration.model = model);
             Config.save();
           },
         ),
@@ -97,7 +97,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.image_size),
           contentPadding: padding,
-          subtitle: Text(Config.image.size ?? s.empty),
+          subtitle: Text(Config.imageGeneration.size ?? s.empty),
           onTap: () async {
             final texts = await Dialogs.input(
               context: context,
@@ -105,7 +105,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
               fields: [
                 InputDialogField(
                   label: s.please_input,
-                  text: Config.image.size,
+                  text: Config.imageGeneration.size,
                 ),
               ],
             );
@@ -113,7 +113,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
 
             final text = texts[0].trim();
             final size = text.isEmpty ? null : text;
-            setState(() => Config.image.size = size);
+            setState(() => Config.imageGeneration.size = size);
             Config.save();
           },
         ),
@@ -121,7 +121,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.image_style),
           contentPadding: padding,
-          subtitle: Text(Config.image.style ?? s.empty),
+          subtitle: Text(Config.imageGeneration.style ?? s.empty),
           onTap: () async {
             final texts = await Dialogs.input(
               context: context,
@@ -129,7 +129,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
               fields: [
                 InputDialogField(
                   label: s.please_input,
-                  text: Config.image.style,
+                  text: Config.imageGeneration.style,
                 ),
               ],
             );
@@ -137,7 +137,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
 
             final text = texts[0].trim();
             final style = text.isEmpty ? null : text;
-            setState(() => Config.image.style = style);
+            setState(() => Config.imageGeneration.style = style);
             Config.save();
           },
         ),
@@ -145,7 +145,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
         ListTile(
           title: Text(s.image_quality),
           contentPadding: padding,
-          subtitle: Text(Config.image.quality ?? s.empty),
+          subtitle: Text(Config.imageGeneration.quality ?? s.empty),
           onTap: () async {
             final texts = await Dialogs.input(
               context: context,
@@ -153,7 +153,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
               fields: [
                 InputDialogField(
                   label: s.please_input,
-                  text: Config.image.quality,
+                  text: Config.imageGeneration.quality,
                 ),
               ],
             );
@@ -161,7 +161,7 @@ class _ConfigTabState extends ConsumerState<ConfigTab> {
 
             final text = texts[0].trim();
             final quality = text.isEmpty ? null : text;
-            setState(() => Config.image.quality = quality);
+            setState(() => Config.imageGeneration.quality = quality);
             Config.save();
           },
         ),

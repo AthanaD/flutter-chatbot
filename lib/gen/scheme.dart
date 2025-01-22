@@ -4,15 +4,6 @@ export "objectbox.g.dart";
 
 @Entity()
 class Module {
-  static const int chatCore = 1;
-  static const int webSearch = 2;
-  static const int vectorStore = 3;
-  static const int textToSpeech = 4;
-  static const int documentChunk = 5;
-  static const int titleGeneration = 6;
-  static const int imageGeneration = 7;
-  static const int imageCompression = 8;
-
   @Id(assignable: true)
   int id;
 
@@ -32,14 +23,14 @@ class Bot {
   @Unique()
   String name;
 
-  bool? stream;
+  bool stream;
   int? maxTokens;
   double? temperature;
   String? systemPrompts;
 
   Bot({
     required this.name,
-    this.stream,
+    this.stream = true,
     this.maxTokens,
     this.temperature,
     this.systemPrompts,
@@ -48,15 +39,18 @@ class Bot {
 
 @Entity()
 class Api {
+  static const int openai = 1;
+  static const int google = 2;
+
   @Id()
   int id = 0;
 
   @Unique()
   String name;
 
+  int type;
   String url;
   String key;
-  String? type;
   List<String> models;
 
   Api({
@@ -64,7 +58,25 @@ class Api {
     required this.key,
     required this.name,
     required this.models,
-    this.type,
+    this.type = openai,
+  });
+}
+
+@Entity()
+class Model {
+  @Id()
+  int id = 0;
+
+  @Unique()
+  String mid;
+
+  bool chat;
+  String name;
+
+  Model({
+    required this.mid,
+    required this.chat,
+    required this.name,
   });
 }
 
@@ -99,7 +111,7 @@ class Message {
   int id = 0;
 
   int role;
-  String? text;
+  String text;
   String? model;
 
   @Property(type: PropertyType.date)
@@ -115,6 +127,7 @@ class Message {
 
   Message({
     required this.role,
+    required this.text,
     required this.time,
     required this.images,
   });
@@ -124,22 +137,4 @@ class Message {
 
   @Transient()
   bool get isAssistant => role == assistant;
-}
-
-@Entity()
-class Model {
-  @Id()
-  int id = 0;
-
-  @Unique()
-  String mid;
-
-  bool chat;
-  String name;
-
-  Model({
-    required this.mid,
-    required this.chat,
-    required this.name,
-  });
 }

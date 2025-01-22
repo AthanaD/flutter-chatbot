@@ -332,7 +332,7 @@ class _ChatSettingsState extends ConsumerState<ChatSettings> {
   void _saveCore() {
     final oldModel = Current.model;
 
-    Current.core = ChatCore(
+    Current.chatCore = ChatCore(
       bot: _bot,
       api: _api,
       model: _model,

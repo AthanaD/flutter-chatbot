@@ -7,8 +7,8 @@ part of 'module.dart';
 // **************************************************************************
 
 ChatCore _$ChatCoreFromJson(Map<String, dynamic> json) => ChatCore(
-      bot: json['bot'] as String?,
-      api: json['api'] as String?,
+      bot: (json['bot'] as num?)?.toInt(),
+      api: (json['api'] as num?)?.toInt(),
       model: json['model'] as String?,
     );
 
@@ -38,7 +38,7 @@ Map<String, dynamic> _$WebSearchToJson(WebSearch instance) => <String, dynamic>{
 
 VectorStore _$VectorStoreFromJson(Map<String, dynamic> json) => VectorStore(
       batchSize: (json['batchSize'] as num?)?.toInt() ?? 64,
-      api: json['api'] as String?,
+      api: (json['api'] as num?)?.toInt(),
       model: json['model'] as String?,
       dimensions: (json['dimensions'] as num?)?.toInt(),
     );
@@ -52,16 +52,16 @@ Map<String, dynamic> _$VectorStoreToJson(VectorStore instance) =>
     };
 
 TextToSpeech _$TextToSpeechFromJson(Map<String, dynamic> json) => TextToSpeech(
-      api: json['api'] as String?,
+      api: (json['api'] as num?)?.toInt(),
       model: json['model'] as String?,
       voice: json['voice'] as String?,
     );
 
 Map<String, dynamic> _$TextToSpeechToJson(TextToSpeech instance) =>
     <String, dynamic>{
-      'voice': instance.voice,
       'api': instance.api,
       'model': instance.model,
+      'voice': instance.voice,
     };
 
 DocumentChunk _$DocumentChunkFromJson(Map<String, dynamic> json) =>
@@ -81,7 +81,7 @@ Map<String, dynamic> _$DocumentChunkToJson(DocumentChunk instance) =>
 TitleGeneration _$TitleGenerationFromJson(Map<String, dynamic> json) =>
     TitleGeneration(
       enable: json['enable'] as bool? ?? false,
-      api: json['api'] as String?,
+      api: (json['api'] as num?)?.toInt(),
       model: json['model'] as String?,
       prompt: json['prompt'] as String?,
     );
@@ -89,27 +89,27 @@ TitleGeneration _$TitleGenerationFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$TitleGenerationToJson(TitleGeneration instance) =>
     <String, dynamic>{
       'enable': instance.enable,
-      'prompt': instance.prompt,
       'api': instance.api,
       'model': instance.model,
+      'prompt': instance.prompt,
     };
 
 ImageGeneration _$ImageGenerationFromJson(Map<String, dynamic> json) =>
     ImageGeneration(
-      api: json['api'] as String?,
-      model: json['model'] as String?,
+      api: (json['api'] as num?)?.toInt(),
       size: json['size'] as String?,
+      model: json['model'] as String?,
       style: json['style'] as String?,
       quality: json['quality'] as String?,
     );
 
 Map<String, dynamic> _$ImageGenerationToJson(ImageGeneration instance) =>
     <String, dynamic>{
+      'api': instance.api,
       'size': instance.size,
+      'model': instance.model,
       'style': instance.style,
       'quality': instance.quality,
-      'api': instance.api,
-      'model': instance.model,
     };
 
 ImageCompression _$ImageCompressionFromJson(Map<String, dynamic> json) =>

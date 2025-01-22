@@ -1,37 +1,35 @@
-import "../config.dart";
 import "package:json_annotation/json_annotation.dart";
 
 part "module.g.dart";
 
+typedef JsonObject = Map<String, dynamic>;
+
+const Map<Type, int> moduleIds = {
+  ChatCore: 1,
+  WebSearch: 2,
+  VectorStore: 3,
+  TextToSpeech: 4,
+  DocumentChunk: 5,
+  ImageGeneration: 6,
+  TitleGeneration: 7,
+  ImageCompression: 8,
+};
+
 @JsonSerializable()
 class ChatCore {
-  String? _bot;
-  set bot(String? value) => _bot = value;
-  String? get bot => Config.bots.containsKey(_bot) ? _bot : null;
-
-  String? _api;
-  set api(String? value) => _api = value;
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-
-  String? _model;
-  set model(String? value) => _model = value;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
+  int? bot;
+  int? api;
+  String? model;
 
   ChatCore({
-    String? bot,
-    String? api,
-    String? model,
-  }) {
-    this.bot = bot;
-    this.api = api;
-    this.model = model;
-  }
+    this.bot,
+    this.api,
+    this.model,
+  });
 
-  factory ChatCore.fromJson(Map<String, dynamic> json) =>
-      _$ChatCoreFromJson(json);
+  factory ChatCore.fromJson(JsonObject json) => _$ChatCoreFromJson(json);
 
-  Map<String, dynamic> toJson() => _$ChatCoreToJson(this);
+  JsonObject toJson() => _$ChatCoreToJson(this);
 }
 
 @JsonSerializable()
@@ -60,10 +58,9 @@ class WebSearch {
     this.searxng,
   });
 
-  factory WebSearch.fromJson(Map<String, dynamic> json) =>
-      _$WebSearchFromJson(json);
+  factory WebSearch.fromJson(JsonObject json) => _$WebSearchFromJson(json);
 
-  Map<String, dynamic> toJson() => _$WebSearchToJson(this);
+  JsonObject toJson() => _$WebSearchToJson(this);
 }
 
 @JsonSerializable()
@@ -73,57 +70,37 @@ class VectorStore {
 
   int? dimensions;
 
-  String? _api;
-  set api(String? value) => _api = value;
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-
-  String? _model;
-  set model(String? value) => _model = value;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
+  int? api;
+  String? model;
 
   VectorStore({
     required this.batchSize,
-    String? api,
-    String? model,
+    this.api,
+    this.model,
     this.dimensions,
-  }) {
-    this.api = api;
-    this.model = model;
-  }
+  });
 
-  factory VectorStore.fromJson(Map<String, dynamic> json) =>
-      _$VectorStoreFromJson(json);
+  factory VectorStore.fromJson(JsonObject json) => _$VectorStoreFromJson(json);
 
-  Map<String, dynamic> toJson() => _$VectorStoreToJson(this);
+  JsonObject toJson() => _$VectorStoreToJson(this);
 }
 
 @JsonSerializable()
 class TextToSpeech {
+  int? api;
+  String? model;
   String? voice;
 
-  String? _api;
-  set api(String? value) => _api = value;
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-
-  String? _model;
-  set model(String? value) => _model = value;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
-
   TextToSpeech({
-    String? api,
-    String? model,
+    this.api,
+    this.model,
     this.voice,
-  }) {
-    this.api = api;
-    this.model = model;
-  }
+  });
 
-  factory TextToSpeech.fromJson(Map<String, dynamic> json) =>
+  factory TextToSpeech.fromJson(JsonObject json) =>
       _$TextToSpeechFromJson(json);
 
-  Map<String, dynamic> toJson() => _$TextToSpeechToJson(this);
+  JsonObject toJson() => _$TextToSpeechToJson(this);
 }
 
 @JsonSerializable()
@@ -143,10 +120,10 @@ class DocumentChunk {
     required this.overlap,
   });
 
-  factory DocumentChunk.fromJson(Map<String, dynamic> json) =>
+  factory DocumentChunk.fromJson(JsonObject json) =>
       _$DocumentChunkFromJson(json);
 
-  Map<String, dynamic> toJson() => _$DocumentChunkToJson(this);
+  JsonObject toJson() => _$DocumentChunkToJson(this);
 }
 
 @JsonSerializable()
@@ -154,61 +131,43 @@ class TitleGeneration {
   @JsonKey(defaultValue: false)
   bool enable;
 
+  int? api;
+  String? model;
   String? prompt;
-
-  String? _api;
-  set api(String? value) => _api = value;
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-
-  String? _model;
-  set model(String? value) => _model = value;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
 
   TitleGeneration({
     required this.enable,
-    String? api,
-    String? model,
+    this.api,
+    this.model,
     this.prompt,
-  }) {
-    this.api = api;
-    this.model = model;
-  }
+  });
 
-  factory TitleGeneration.fromJson(Map<String, dynamic> json) =>
+  factory TitleGeneration.fromJson(JsonObject json) =>
       _$TitleGenerationFromJson(json);
 
-  Map<String, dynamic> toJson() => _$TitleGenerationToJson(this);
+  JsonObject toJson() => _$TitleGenerationToJson(this);
 }
 
 @JsonSerializable()
 class ImageGeneration {
+  int? api;
   String? size;
+  String? model;
   String? style;
   String? quality;
 
-  String? _api;
-  set api(String? value) => _api = value;
-  String? get api => Config.apis.containsKey(_api) ? _api : null;
-
-  String? _model;
-  set model(String? value) => _model = value;
-  String? get model =>
-      (Config.apis[_api]?.models.contains(_model) ?? false) ? _model : null;
-
   ImageGeneration({
-    String? api,
-    String? model,
+    this.api,
     this.size,
+    this.model,
     this.style,
     this.quality,
-  })  : _api = api,
-        _model = model;
+  });
 
-  factory ImageGeneration.fromJson(Map<String, dynamic> json) =>
+  factory ImageGeneration.fromJson(JsonObject json) =>
       _$ImageGenerationFromJson(json);
 
-  Map<String, dynamic> toJson() => _$ImageGenerationToJson(this);
+  JsonObject toJson() => _$ImageGenerationToJson(this);
 }
 
 @JsonSerializable()
@@ -232,8 +191,8 @@ class ImageCompression {
     required this.minHeight,
   });
 
-  factory ImageCompression.fromJson(Map<String, dynamic> json) =>
+  factory ImageCompression.fromJson(JsonObject json) =>
       _$ImageCompressionFromJson(json);
 
-  Map<String, dynamic> toJson() => _$ImageCompressionToJson(this);
+  JsonObject toJson() => _$ImageCompressionToJson(this);
 }

@@ -25,7 +25,7 @@ class Current {
   static File? _file;
   static Chat? _chat;
 
-  static ChatCore core = Config.chatCore;
+  static ChatCore chatCore = Config.chatCore;
   static final List<Message> messages = [];
   static TtsStatus ttsStatus = TtsStatus.nothing;
   static ChatStatus chatStatus = ChatStatus.nothing;
@@ -46,12 +46,12 @@ class Current {
       messages.add(Message.fromJson(message));
     }
 
-    core = coreJson != null ? ChatCore.fromJson(coreJson) : Config.chatCore;
+    chatCore = coreJson != null ? ChatCore.fromJson(coreJson) : Config.chatCore;
   }
 
   static Future<void> save() async {
     await _file!.writeAsString(jsonEncode({
-      "core": core,
+      "core": chatCore,
       "messages": messages,
     }));
   }
@@ -60,7 +60,7 @@ class Current {
     _chat = null;
     _file = null;
     messages.clear();
-    core = Config.chatCore;
+    chatCore = Config.chatCore;
   }
 
   static void newChat(String title) {
@@ -81,9 +81,9 @@ class Current {
     Config.save();
   }
 
-  static String? get bot => core.bot;
-  static String? get api => core.api;
-  static String? get model => core.model;
+  static String? get bot => chatCore.bot;
+  static String? get api => chatCore.api;
+  static String? get model => chatCore.model;
 
   static Api? get _api => Config.apis[api];
   static Bot? get _bot => Config.bots[bot];

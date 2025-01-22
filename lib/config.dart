@@ -27,20 +27,18 @@ import "package:shared_preferences/shared_preferences.dart";
 import "gen/scheme.dart";
 import "gen/module.dart";
 
-class Config {
-  static late final ChatCore chatCore;
-  static late final WebSearch webSearch;
-  static late final VectorStore vectorStore;
-  static late final TextToSpeech textToSpeech;
-  static late final DocumentChunk documentChunk;
-  static late final TitleGeneration titleGeneration;
-  static late final ImageGeneration imageGeneration;
-  static late final ImageCompression imageCompression;
+export "gen/scheme.dart";
+export "gen/module.dart";
 
-  static final List<Chat> chats = [];
-  static final Map<String, Bot> bots = {};
-  static final Map<String, Api> apis = {};
-  static final Map<String, Model> models = {};
+class Config {
+  static late ChatCore chatCore;
+  static late WebSearch webSearch;
+  static late VectorStore vectorStore;
+  static late TextToSpeech textToSpeech;
+  static late DocumentChunk documentChunk;
+  static late TitleGeneration titleGeneration;
+  static late ImageGeneration imageGeneration;
+  static late ImageCompression imageCompression;
 
   static late final String _cacheDir;
   static late final String _configDir;
@@ -54,36 +52,10 @@ class Config {
   static late final Box<Model> modelBox;
   static late final Box<Module> moduleBox;
 
-  static Future<void> _initDb() async {
-    store = await openStore(
-      directory: _configDir,
-    );
-    botBox = store.box<Bot>();
-    apiBox = store.box<Api>();
-    chatBox = store.box<Chat>();
-    modelBox = store.box<Model>();
-    moduleBox = store.box<Module>();
-  }
-
-  static void saveModule(int id, Object module) {
-    moduleBox.put(Module(
-      id: id,
-      json: jsonEncode(module),
-    ));
-  }
-
   static Future<void> init() async {
-    _cacheDir = (await getTemporaryDirectory()).path;
-    if (Platform.isAndroid) {
-      _configDir = (await getExternalStorageDirectory())!.path;
-    } else {
-      _configDir = (await getApplicationSupportDirectory()).path;
-    }
-
-    await _initDb();
-
-    _initDir();
-
+    await _initDir();
+    await _initBox();
+    await Updater.init();
     await Preferences.init();
   }
 
@@ -93,16 +65,55 @@ class Config {
       join(_configDir, _imageDir, fileName);
   static String cacheFilePath(String fileName) => join(_cacheDir, fileName);
 
-  static void _initDir() {
+  static Future<void> _initDir() async {
+    _cacheDir = (await getTemporaryDirectory()).path;
+    if (Platform.isAndroid) {
+      _configDir = (await getExternalStorageDirectory())!.path;
+    } else {
+      _configDir = (await getApplicationSupportDirectory()).path;
+    }
+
     final audioDir = Directory(join(_configDir, _audioDir));
-    if (!(audioDir.existsSync())) {
+    if (!audioDir.existsSync()) {
       audioDir.createSync();
     }
 
     final imageDir = Directory(join(_configDir, _imageDir));
-    if (!(imageDir.existsSync())) {
+    if (!imageDir.existsSync()) {
       imageDir.createSync();
     }
+  }
+
+  static Future<void> _initBox() async {
+    store = await openStore(
+      directory: _configDir,
+    );
+
+    botBox = store.box<Bot>();
+    apiBox = store.box<Api>();
+    chatBox = store.box<Chat>();
+    modelBox = store.box<Model>();
+    moduleBox = store.box<Module>();
+
+    _initModule();
+  }
+
+  static void _initModule() {
+    T build<T>(T Function(JsonObject) fromJson) {
+      JsonObject? map;
+      final json = moduleBox.get(moduleIds[T]!)?.json;
+      if (json != null) map = jsonDecode(json);
+      return fromJson(map ?? const <String, dynamic>{});
+    }
+
+    chatCore = build(ChatCore.fromJson);
+    webSearch = build(WebSearch.fromJson);
+    vectorStore = build(VectorStore.fromJson);
+    textToSpeech = build(TextToSpeech.fromJson);
+    documentChunk = build(DocumentChunk.fromJson);
+    imageGeneration = build(ImageGeneration.fromJson);
+    titleGeneration = build(TitleGeneration.fromJson);
+    imageCompression = build(ImageCompression.fromJson);
   }
 }
 
@@ -151,18 +162,20 @@ class Backup {
 }
 
 class Updater {
-  static List<int>? versionCode;
+  static late List<int> versionCode;
+
   static const String latestUrl =
       "https://github.com/fanenr/flutter-chatbot/releases/latest";
+
   static const String apiEndPoint =
       "https://api.github.com/repos/fanenr/flutter-chatbot/releases/latest";
 
-  static Future<Map?> check() async {
-    if (versionCode == null) {
-      final version = (await PackageInfo.fromPlatform()).version;
-      versionCode = version.split('.').map(int.parse).toList();
-    }
+  static Future<void> init() async {
+    final version = (await PackageInfo.fromPlatform()).version;
+    versionCode = version.split('.').map(int.parse).toList();
+  }
 
+  static Future<Map?> check() async {
     final client = Client();
     final response = await client.get(Uri.parse(apiEndPoint));
 
@@ -177,8 +190,8 @@ class Updater {
   static bool _isNewer(String latest) {
     final latestCode = latest.substring(1).split('.').map(int.parse).toList();
     for (int i = 0; i < 3; i++) {
-      if (latestCode[i] < versionCode![i]) return false;
-      if (latestCode[i] > versionCode![i]) return true;
+      if (latestCode[i] < versionCode[i]) return false;
+      if (latestCode[i] > versionCode[i]) return true;
     }
     return false;
   }
@@ -196,13 +209,12 @@ class Preferences {
   }
 
   static bool get search => _search;
-  static bool get googleSearch => _googleSearch;
-
   static set search(bool value) {
     _search = value;
     _prefs.setBool("search", value);
   }
 
+  static bool get googleSearch => _googleSearch;
   static set googleSearch(bool value) {
     _googleSearch = value;
     _prefs.setBool("googleSearch", value);
@@ -213,6 +225,14 @@ class Preferences {
     _googleSearch = await _prefs.getBool("googleSearch") ?? false;
   }
 }
+
+Bot? botWith(int? id) => id != null ? Config.botBox.get(id) : null;
+Api? apiWith(int? id) => id != null ? Config.apiBox.get(id) : null;
+
+void saveModule<T>(T module) => Config.moduleBox.put(Module(
+      id: moduleIds[T]!,
+      json: jsonEncode(module),
+    ));
 
 const Color _baseColor = Colors.indigo;
 

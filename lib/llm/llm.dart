@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with ChatBot. If not, see <https://www.gnu.org/licenses/>.
 
+import "package:chatbot/util.dart";
+
 import "web.dart";
 import "../config.dart";
 import "../chat/chat.dart";
@@ -50,9 +52,9 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
     dynamic error;
 
     final tts = Config.textToSpeech;
+    final api = apiWith(tts.api)!;
     final model = tts.model!;
     final voice = tts.voice!;
-    final api = Config.apis[tts.api]!;
 
     final apiUrl = api.url;
     final apiKey = api.key;
@@ -74,7 +76,7 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
           "model": model,
           "voice": voice,
           "stream": false,
-          "input": markdownToText(message.item.text),
+          "input": markdownToText(message.text),
         }),
       );
 
@@ -112,11 +114,9 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
   Future<dynamic> chat(Message message) async {
     dynamic error;
 
-    final item = message.item;
-    final model = Current.model!;
-    final apiUrl = Current.apiUrl!;
-    final apiKey = Current.apiKey!;
-    final apiType = Current.apiType;
+    final core = Current.chatCore;
+    final bot = botWith(core.bot);
+    final api = apiWith(core.api)!;
     final messages = Current.messages;
 
     Current.chatStatus = ChatStatus.responding;
@@ -125,56 +125,59 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
 
     try {
       final context = await _buildContext(messages);
+      BaseChatModel llm;
 
-      _chatClient = switch (apiType) {
-        "google" => _GoogleClient(baseUrl: apiUrl),
-        _ => Client(),
-      };
-
-      BaseChatModel llm = switch (apiType) {
-        "google" => ChatGoogleGenerativeAI(
-            apiKey: apiKey,
-            baseUrl: apiUrl,
+      switch (api.type) {
+        case Api.google:
+          _chatClient = _GoogleClient(baseUrl: api.url);
+          llm = ChatGoogleGenerativeAI(
+            apiKey: api.key,
+            baseUrl: api.url,
             client: _chatClient,
             defaultOptions: ChatGoogleGenerativeAIOptions(
-              model: model,
+              model: core.model,
               temperature: Current.temperature,
               maxOutputTokens: Current.maxTokens,
             ),
-          ),
-        _ => ChatOpenAI(
-            apiKey: apiKey,
-            baseUrl: apiUrl,
+          );
+          break;
+
+        default:
+          _chatClient = Client();
+          llm = ChatOpenAI(
+            apiKey: api.key,
+            baseUrl: api.url,
             client: _chatClient,
             defaultOptions: ChatOpenAIOptions(
-              model: model,
+              model: core.model,
               maxTokens: Current.maxTokens,
               temperature: Current.temperature,
             ),
-          ),
-      };
+          );
+          break;
+      }
 
-      if (Current.stream ?? true) {
+      if (bot?.stream ?? true) {
         final stream = llm.stream(context);
         await for (final chunk in stream) {
-          item.text += chunk.output.content;
+          message.text += chunk.output.content;
           updateMessage(message);
         }
       } else {
         final result = await llm.invoke(context);
-        item.text += result.output.content;
+        message.text += result.output.content;
         updateMessage(message);
       }
     } catch (e) {
       if (!Current.chatStatus.isNothing) error = e;
-      if (item.text.isEmpty) {
-        if (message.list.length == 1) {
-          messages.length -= 2;
-          ref.read(messagesProvider.notifier).notify();
-        } else {
-          message.list.removeAt(message.index--);
-          updateMessage(message);
-        }
+      if (message.text.isEmpty) {
+        // if (message.list.length == 1) {
+        //   messages.length -= 2;
+        //   ref.read(messagesProvider.notifier).notify();
+        // } else {
+        //   message.list.removeAt(message.index--);
+        //   updateMessage(message);
+        // }
       }
     }
 
@@ -192,26 +195,26 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
   }
 
   Future<PromptValue> _buildContext(List<Message> messages) async {
+    messages = List.of(messages);
     final context = <ChatMessage>[];
     final system = Current.systemPrompts;
-    final items = messages.map((it) => it.item).toList();
 
-    if (items.last.role.isAssistant) items.removeLast();
+    if (messages.last.isAssistant) messages.removeLast();
 
     if (Preferences.search && !Preferences.googleSearch) {
-      items.last = await _buildWebContext(items.last);
-      messages.last.item.citations = items.last.citations;
+      messages.last = await _buildWebContext(messages.last);
+      // messages.last.citations = items.last.citations;
     }
 
     if (system != null) context.add(ChatMessage.system(system));
 
-    for (final item in items) {
+    for (final item in messages) {
       switch (item.role) {
-        case MessageRole.assistant:
+        case Message.assistant:
           context.add(ChatMessage.ai(item.text));
           break;
 
-        case MessageRole.user:
+        case Message.user:
           if (item.images.isEmpty) {
             context.add(ChatMessage.humanText(item.text));
             break;
@@ -222,7 +225,7 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
             for (final image in item.images)
               ChatMessageContent.image(
                 mimeType: "image/jpeg",
-                data: image.base64,
+                data: image,
               ),
           ])));
           break;
@@ -232,70 +235,69 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
     return PromptValue.chat(context);
   }
 
-  Future<MessageItem> _buildWebContext(MessageItem origin) async {
+  Future<Message> _buildWebContext(Message origin) async {
     final text = origin.text;
 
     _chatClient = Client();
     final urls = await _getWebPageUrls(
       text,
-      Config.webSearch.n ?? 64,
+      Config.webSearch.n,
     );
     if (urls.isEmpty) throw "No web page found.";
 
-    final duration = Duration(milliseconds: Config.webSearch.fetchTime ?? 2000);
+    final duration = Duration(milliseconds: Config.webSearch.fetchTime);
     var docs = await Isolate.run(() async {
       final loader = WebLoader(urls, timeout: duration);
       return await loader.load();
     });
     if (docs.isEmpty) throw "No web content retrieved.";
 
-    if (Config.webSearch.vector ?? false) {
+    if (Config.webSearch.vector) {
       final vector = Config.vectorStore;
-      final document = Config.documentChunk;
-      final api = Config.apis[vector.api]!;
+      final chunk = Config.documentChunk;
+      final api = apiWith(vector.api)!;
 
-      final apiUrl = api.url;
-      final apiKey = api.key;
-      final apiType = api.type;
-      final model = vector.model!;
+      final batchSize = vector.batchSize;
       final dimensions = vector.dimensions;
-      final batchSize = vector.batchSize ?? 64;
 
-      final topK = document.n ?? 8;
-      final chunkSize = document.size ?? 2000;
-      final chunkOverlap = document.overlap ?? 100;
+      final topK = chunk.n;
+      final chunkSize = chunk.size;
+      final chunkOverlap = chunk.overlap;
 
       final splitter = RecursiveCharacterTextSplitter(
         chunkSize: chunkSize,
         chunkOverlap: chunkOverlap,
       );
 
-      _chatClient = switch (apiType) {
-        "google" => _GoogleClient(
-            baseUrl: apiUrl,
-            enableSearch: false,
-          ),
-        _ => _chatClient,
-      };
+      Embeddings embeddings;
 
-      final embeddings = switch (apiType) {
-        "google" => GoogleGenerativeAIEmbeddings(
-            model: model,
-            apiKey: apiKey,
-            baseUrl: apiUrl,
+      switch (api.type) {
+        case Api.google:
+          _chatClient = _GoogleClient(
+            baseUrl: api.url,
+            enableSearch: false,
+          );
+          embeddings = GoogleGenerativeAIEmbeddings(
+            apiKey: api.key,
+            baseUrl: api.url,
             client: _chatClient,
+            model: vector.model!,
             batchSize: batchSize,
             dimensions: dimensions,
-          ),
-        _ => OpenAIEmbeddings(
-            model: model,
-            apiKey: apiKey,
-            baseUrl: apiUrl,
+          );
+          break;
+
+        default:
+          embeddings = OpenAIEmbeddings(
+            apiKey: api.key,
+            baseUrl: api.url,
             client: _chatClient,
+            model: vector.model!,
             batchSize: batchSize,
             dimensions: dimensions,
-          ),
-      };
+          );
+          break;
+      }
 
       final vectorStore = MemoryVectorStore(
         embeddings: embeddings,
@@ -331,20 +333,22 @@ You need to answer the user's question based on the above content:
       "text": text,
     });
 
-    final item = MessageItem(
-      role: MessageRole.user,
+    final ret = Message(
       text: context,
+      role: origin.role,
+      time: origin.time,
+      images: origin.images,
     );
 
-    for (final doc in docs) {
-      item.citations.add((
-        type: CitationType.web,
-        content: doc.pageContent,
-        source: doc.metadata["source"],
-      ));
-    }
+    // for (final doc in docs) {
+    //   item.citations.add((
+    //     type: CitationType.web,
+    //     content: doc.pageContent,
+    //     source: doc.metadata["source"],
+    //   ));
+    // }
 
-    return item;
+    return ret;
   }
 
   Future<List<String>> _getWebPageUrls(String query, int n) async {
@@ -352,7 +356,7 @@ You need to answer the user's question based on the above content:
     final baseUrl = searxng.replaceFirst("{text}", query);
 
     final badResponse = Response("Request Timeout", 408);
-    final duration = Duration(milliseconds: Config.webSearch.queryTime ?? 3000);
+    final duration = Duration(milliseconds: Config.webSearch.queryTime);
 
     Uri uriOf(int i) => Uri.parse("$baseUrl&pageno=$i");
     final responses = await Future.wait(List.generate(
@@ -380,12 +384,12 @@ You need to answer the user's question based on the above content:
 }
 
 Future<String> generateTitle(String text) async {
-  if (!(Config.titleGeneration.enable ?? false)) return text;
+  if (!Config.titleGeneration.enable) return text;
 
-  final model = Config.titleGeneration.model;
-  final api = Config.apis[Config.titleGeneration.api];
-  if (api == null || model == null) return text;
+  final config = Config.titleGeneration;
+  if (Util.checkApiModel(config.api, config.model)) return text;
 
+  final api = apiWith(config.api)!;
   final prompt = Config.titleGeneration.prompt ??
       """
 Based on the user input below, generate a concise and relevant title.
@@ -401,36 +405,38 @@ User input:
       """
           .trim();
 
-  final apiUrl = api.url;
-  final apiKey = api.key;
-  final apiType = api.type;
+  Client client;
+  BaseChatModel llm;
 
-  final client = switch (apiType) {
-    "google" => _GoogleClient(
-        baseUrl: apiUrl,
-        enableSearch: false,
-      ),
-    _ => Client(),
-  };
-
-  BaseChatModel llm = switch (apiType) {
-    "google" => ChatGoogleGenerativeAI(
-        apiKey: apiKey,
+  switch (api.type) {
+    case Api.google:
+      client = _GoogleClient(baseUrl: api.url);
+      llm = ChatGoogleGenerativeAI(
+        apiKey: api.key,
+        baseUrl: api.url,
         client: client,
-        baseUrl: apiUrl,
         defaultOptions: ChatGoogleGenerativeAIOptions(
-          model: model,
+          model: config.model,
+          temperature: Current.temperature,
+          maxOutputTokens: Current.maxTokens,
         ),
-      ),
-    _ => ChatOpenAI(
-        apiKey: apiKey,
+      );
+      break;
+
+    default:
+      client = Client();
+      llm = ChatOpenAI(
+        apiKey: api.key,
+        baseUrl: api.url,
         client: client,
-        baseUrl: apiUrl,
         defaultOptions: ChatOpenAIOptions(
-          model: model,
+          model: config.model,
+          maxTokens: Current.maxTokens,
+          temperature: Current.temperature,
         ),
-      ),
-  };
+      );
+      break;
+  }
 
   final chain = ChatPromptTemplate.fromTemplate(prompt).pipe(llm);
   final res = await chain.invoke({"text": text});

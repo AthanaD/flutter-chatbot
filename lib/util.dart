@@ -84,11 +84,15 @@ class Util {
     }
   }
 
-  static bool checkChat(BuildContext context) {
-    final core = Current.core;
-    final coreOk = core.api != null && core.model != null;
+  static bool checkApiModel(int? id, String? model) {
+    final api = apiWith(id);
+    return api != null && model != null && api.models.contains(model);
+  }
 
-    if (!coreOk) {
+  static bool checkChat(BuildContext context) {
+    final core = Current.chatCore;
+
+    if (!checkApiModel(core.api, core.model)) {
       showSnackBar(
         context: context,
         content: Text(S.of(context).setup_api_model_first),
@@ -99,7 +103,7 @@ class Util {
     if (Preferences.search) {
       final search = Config.webSearch;
       final vector = Config.vectorStore;
-      final vectorOk = vector.api != null && vector.model != null;
+      final vectorOk = checkApiModel(vector.api, vector.model);
       final searchOk = Preferences.googleSearch || search.searxng != null;
 
       if (!searchOk) {
@@ -110,7 +114,7 @@ class Util {
         return false;
       }
 
-      if ((search.vector ?? false) && !vectorOk) {
+      if (search.vector && !vectorOk) {
         showSnackBar(
           context: context,
           content: Text(S.of(context).setup_vector_first),

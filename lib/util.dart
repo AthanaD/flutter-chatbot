@@ -145,7 +145,7 @@ class Util {
   static String formatDateTime(DateTime time) {
     String two(int n) => n.toString().padLeft(2, '0');
 
-    return "${two(time.month)}-${two(time.day)} "
+    return "${two(time.month)}/${two(time.day)} "
         "${two(time.hour)}:${two(time.minute)}";
   }
 }

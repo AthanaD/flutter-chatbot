@@ -13,97 +13,52 @@
 // You should have received a copy of the GNU General Public License
 // along with ChatBot. If not, see <https://www.gnu.org/licenses/>.
 
-import "message.dart";
-import "../util.dart";
 import "../config.dart";
 
-import "dart:io";
-import "dart:isolate";
 import "dart:convert";
 
 class Current {
-  static File? _file;
-  static Chat? _chat;
-
+  static Chat? chat;
+  static List<Message> messages = [];
   static ChatCore chatCore = Config.chatCore;
-  static final List<Message> messages = [];
   static TtsStatus ttsStatus = TtsStatus.nothing;
   static ChatStatus chatStatus = ChatStatus.nothing;
 
   static Future<void> load(Chat chat) async {
-    _file = File(Config.chatFilePath(chat.fileName));
-    final from = _file;
-
-    final json = await Isolate.run(() async {
-      return jsonDecode(await from!.readAsString());
-    });
-
-    final messagesJson = json["messages"] ?? [];
-    final coreJson = json["core"];
-
     messages.clear();
-    for (final message in messagesJson) {
-      messages.add(Message.fromJson(message));
+    final root = chat.messages.first;
+
+    for (;;) {
+      final next = root.child.target;
+      if (next == null) break;
+      messages.add(next);
     }
 
-    chatCore = coreJson != null ? ChatCore.fromJson(coreJson) : Config.chatCore;
-  }
-
-  static Future<void> save() async {
-    await _file!.writeAsString(jsonEncode({
-      "core": chatCore,
-      "messages": messages,
-    }));
-  }
-
-  static void clear() {
-    _chat = null;
-    _file = null;
-    messages.clear();
-    chatCore = Config.chatCore;
+    Current.chat = chat;
+    chatCore = ChatCore.fromJson(jsonDecode(chat.core));
   }
 
   static void newChat(String title) {
-    final now = DateTime.now();
-    final timestamp = now.millisecondsSinceEpoch.toString();
+    final time = DateTime.now();
 
-    final time = Util.formatDateTime(now);
-    final fileName = "$timestamp.json";
+    final root = Message(
+      text: "",
+      time: time,
+      images: const [],
+      role: Message.root,
+    );
 
-    _chat = Chat(
+    final chat = Chat(
       time: time,
       title: title,
-      fileName: fileName,
+      core: jsonEncode(chatCore),
     );
-    _file = File(Config.chatFilePath(fileName));
 
-    Config.chats.insert(0, _chat!);
-    Config.save();
+    chat.messages.add(root);
+
+    Current.chat = chat;
+    Config.chatBox.put(chat);
   }
-
-  static String? get bot => chatCore.bot;
-  static String? get api => chatCore.api;
-  static String? get model => chatCore.model;
-
-  static Api? get _api => Config.apis[api];
-  static Bot? get _bot => Config.bots[bot];
-
-  static String? get apiUrl => _api?.url;
-  static String? get apiKey => _api?.key;
-  static String? get apiType => _api?.type;
-
-  static bool? get stream => _bot?.stream;
-  static int? get maxTokens => _bot?.maxTokens;
-  static double? get temperature => _bot?.temperature;
-  static String? get systemPrompts => _bot?.systemPrompts;
-
-  static Chat? get chat => _chat;
-  static set chat(Chat? chat) => _chat = chat!;
-
-  static String? get title => _chat?.title;
-  static set title(String? title) => _chat?.title = title!;
-
-  static bool get hasChat => _chat != null;
 }
 
 enum TtsStatus {

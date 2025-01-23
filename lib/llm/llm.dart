@@ -134,8 +134,8 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
             client: _chatClient,
             defaultOptions: ChatGoogleGenerativeAIOptions(
               model: core.model,
-              temperature: Current.temperature,
-              maxOutputTokens: Current.maxTokens,
+              temperature: bot?.temperature,
+              maxOutputTokens: bot?.maxTokens,
             ),
           );
           break;
@@ -148,8 +148,8 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
             client: _chatClient,
             defaultOptions: ChatOpenAIOptions(
               model: core.model,
-              maxTokens: Current.maxTokens,
-              temperature: Current.temperature,
+              maxTokens: bot?.maxTokens,
+              temperature: bot?.temperature,
             ),
           );
           break;
@@ -195,7 +195,6 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
   Future<PromptValue> _buildContext(List<Message> messages) async {
     messages = List.of(messages);
     final context = <ChatMessage>[];
-    final system = Current.systemPrompts;
 
     if (messages.last.isAssistant) messages.removeLast();
 
@@ -204,6 +203,7 @@ class LlmNotifier extends AutoDisposeNotifier<void> {
       // messages.last.citations = items.last.citations;
     }
 
+    final system = botWith(Current.chatCore.bot)?.systemPrompts;
     if (system != null) context.add(ChatMessage.system(system));
 
     for (final item in messages) {
@@ -415,8 +415,6 @@ User input:
         client: client,
         defaultOptions: ChatGoogleGenerativeAIOptions(
           model: config.model,
-          temperature: Current.temperature,
-          maxOutputTokens: Current.maxTokens,
         ),
       );
       break;
@@ -429,8 +427,6 @@ User input:
         client: client,
         defaultOptions: ChatOpenAIOptions(
           model: config.model,
-          maxTokens: Current.maxTokens,
-          temperature: Current.temperature,
         ),
       );
       break;

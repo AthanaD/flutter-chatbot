@@ -134,7 +134,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(4, 7377050576869035534),
       name: 'Message',
-      lastPropertyId: const obx_int.IdUid(8, 8505024590117543449),
+      lastPropertyId: const obx_int.IdUid(9, 1413426283345581966),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -180,6 +180,13 @@ final _entities = <obx_int.ModelEntity>[
             type: 11,
             flags: 520,
             indexId: const obx_int.IdUid(4, 7249033669597253615),
+            relationTarget: 'Message'),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(9, 1413426283345581966),
+            name: 'childId',
+            type: 11,
+            flags: 520,
+            indexId: const obx_int.IdUid(6, 1159110928858228091),
             relationTarget: 'Message')
       ],
       relations: <obx_int.ModelRelation>[],
@@ -274,7 +281,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
       lastEntityId: const obx_int.IdUid(6, 7262885693886505344),
-      lastIndexId: const obx_int.IdUid(5, 8033311332338491121),
+      lastIndexId: const obx_int.IdUid(6, 1159110928858228091),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [],
@@ -426,7 +433,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
         }),
     Message: obx_int.EntityDefinition<Message>(
         model: _entities[3],
-        toOneRelations: (Message object) => [object.chat, object.parent],
+        toOneRelations: (Message object) =>
+            [object.chat, object.parent, object.child],
         toManyRelations: (Message object) => {
               obx_int.RelInfo<Message>.toOneBacklink(
                       8, object.id, (Message srcObject) => srcObject.parent):
@@ -442,7 +450,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
               object.model == null ? null : fbb.writeString(object.model!);
           final imagesOffset = fbb.writeList(
               object.images.map(fbb.writeString).toList(growable: false));
-          fbb.startTable(9);
+          fbb.startTable(10);
           fbb.addInt64(0, object.id);
           fbb.addInt64(1, object.role);
           fbb.addOffset(2, textOffset);
@@ -451,6 +459,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addOffset(5, imagesOffset);
           fbb.addInt64(6, object.chat.targetId);
           fbb.addInt64(7, object.parent.targetId);
+          fbb.addInt64(8, object.child.targetId);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -481,6 +490,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
           object.parent.targetId =
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0);
           object.parent.attach(store);
+          object.child.targetId =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 20, 0);
+          object.child.attach(store);
           obx_int.InternalToManyAccess.setRelInfo<Message>(
               object.children,
               store,
@@ -652,6 +664,10 @@ class Message_ {
   /// See [Message.parent].
   static final parent =
       obx.QueryRelationToOne<Message, Message>(_entities[3].properties[7]);
+
+  /// See [Message.child].
+  static final child =
+      obx.QueryRelationToOne<Message, Message>(_entities[3].properties[8]);
 
   /// see [Message.children]
   static final children =

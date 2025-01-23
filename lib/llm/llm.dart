@@ -13,11 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with ChatBot. If not, see <https://www.gnu.org/licenses/>.
 
-import "package:chatbot/util.dart";
-
 import "web.dart";
+import "../util.dart";
 import "../config.dart";
-import "../chat/chat.dart";
 import "../chat/current.dart";
 import "../chat/message.dart";
 import "../markdown/util.dart";

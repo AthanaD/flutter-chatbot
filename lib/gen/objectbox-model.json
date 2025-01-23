@@ -116,7 +116,7 @@
     },
     {
       "id": "4:7377050576869035534",
-      "lastPropertyId": "8:8505024590117543449",
+      "lastPropertyId": "9:1413426283345581966",
       "name": "Message",
       "properties": [
         {
@@ -164,6 +164,14 @@
           "type": 11,
           "flags": 520,
           "indexId": "4:7249033669597253615",
+          "relationTarget": "Message"
+        },
+        {
+          "id": "9:1413426283345581966",
+          "name": "childId",
+          "type": 11,
+          "flags": 520,
+          "indexId": "6:1159110928858228091",
           "relationTarget": "Message"
         }
       ],
@@ -221,7 +229,7 @@
     }
   ],
   "lastEntityId": "6:7262885693886505344",
-  "lastIndexId": "5:8033311332338491121",
+  "lastIndexId": "6:1159110928858228091",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

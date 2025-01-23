@@ -103,8 +103,8 @@ class Chat {
 
 @Entity()
 class Message {
-  static const int user = 0;
-  static const int system = 1;
+  static const int root = 0;
+  static const int user = 1;
   static const int assistant = 2;
 
   @Id()
@@ -119,6 +119,8 @@ class Message {
 
   List<String> images;
   final chat = ToOne<Chat>();
+
+  final child = ToOne<Message>();
 
   final parent = ToOne<Message>();
 
